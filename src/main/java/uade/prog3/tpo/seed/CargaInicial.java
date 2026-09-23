@@ -13,20 +13,23 @@ import uade.prog3.tpo.repository.NodoRepository;
 import java.util.List;
 
 /**
- * Carga un grafo chico de ejemplo para que la aplicacion sea probable
- * apenas se levanta, sin tener que cargar datos a mano.
+ * Carga el dominio del grupo: la red logistica de reparto de paquetes en el
+ * AMBA. Ver README.md para la descripcion completa y el diagrama.
  *
- * El dominio es DELIBERADAMENTE generico (nodos A..H). Cada grupo lo
- * reemplaza por el suyo y pone app.seed.enabled=false, o bien reescribe
- * esta clase con sus propios datos.
+ * Nodos: un centro de distribucion (CD), tres depositos regionales y seis
+ * puntos de entrega. Aristas: tramos de ruta planificados, con sentido de
+ * circulacion; el costo es el TIEMPO DE VIAJE EN MINUTOS.
+ * Items: paquetes con peso (kg) y valor declarado (USD).
  *
- * El grafo elegido tiene, a proposito:
- *   - 8 vertices y 12 aristas: chico para verificar a mano, grande para
- *     que los algoritmos no den resultados triviales
- *   - todos los costos positivos, para que Dijkstra sea aplicable
- *   - es conexo, para que Prim y Kruskal tengan solucion
- *   - hay al menos un camino donde el mas corto NO es el directo, para
- *     que se note la relajacion de aristas
+ * El grafo esta armado para que:
+ *   - el camino mas rapido NO sea el directo en varios pares
+ *     (CD->DN directo 30, via PAL 27; DS->QUI directo 35, via AVE 32)
+ *   - sea conexo como no dirigido, para que exista el MST (costo 150)
+ *   - todos los costos sean positivos, para que Dijkstra aplique
+ *   - haya varias rutas simples entre CD y QUI para el backtracking (8)
+ *
+ * Los paquetes estan calibrados para que, con capacidad 10 kg, greedy por
+ * ratio elija {P1, P4, P7} = 78 USD mientras que el optimo es {P2, P3} = 95.
  */
 @Component
 @ConditionalOnProperty(name = "app.seed.enabled", havingValue = "true")
@@ -49,47 +52,58 @@ public class CargaInicial implements CommandLineRunner {
             return;
         }
 
-        Nodo a = new Nodo("A", "Nodo A", "CENTRO", 0);
-        Nodo b = new Nodo("B", "Nodo B", "PUNTO", 12);
-        Nodo c = new Nodo("C", "Nodo C", "PUNTO", 8);
-        Nodo d = new Nodo("D", "Nodo D", "PUNTO", 15);
-        Nodo e = new Nodo("E", "Nodo E", "PUNTO", 6);
-        Nodo f = new Nodo("F", "Nodo F", "PUNTO", 20);
-        Nodo g = new Nodo("G", "Nodo G", "PUNTO", 9);
-        Nodo h = new Nodo("H", "Nodo H", "PUNTO", 4);
+        List<Nodo> nodos = nodos();
+        nodoRepository.saveAll(nodos);
+        itemRepository.saveAll(paquetes());
 
-        // El camino directo A->C cuesta 9, pero A->B->C cuesta 4+3=7.
-        // Sirve para verificar que la relajacion de aristas este bien hecha.
-        a.conectar(b, 4);
-        a.conectar(c, 9);
-        b.conectar(c, 3);
-        b.conectar(d, 7);
-        c.conectar(d, 2);
-        c.conectar(e, 11);
-        d.conectar(e, 5);
-        d.conectar(f, 8);
-        e.conectar(f, 6);
-        e.conectar(g, 10);
-        f.conectar(h, 3);
-        g.conectar(h, 4);
-
-        nodoRepository.saveAll(List.of(a, b, c, d, e, f, g, h));
-
-        // Items para los problemas de seleccion bajo restriccion.
-        //
-        // Calibrado a proposito: con capacidad 10, greedy por ratio valor/peso
-        // elige {I4, I2} y obtiene 90, mientras que el optimo real es {I4, I5}
-        // con 105. Es el contraejemplo que se necesita para comparar greedy
-        // contra programacion dinamica.
-        itemRepository.saveAll(List.of(
-                new Item("I1", "Item 1", 5, 10, "A"),
-                new Item("I2", "Item 2", 4, 40, "B"),
-                new Item("I3", "Item 3", 6, 30, "C"),
-                new Item("I4", "Item 4", 3, 50, "D"),
-                new Item("I5", "Item 5", 7, 55, "E")
-        ));
-
-        log.info("Carga inicial completada: 8 nodos, 12 aristas, 5 items.");
+        log.info("Carga inicial completada: {} nodos, 15 tramos, 8 paquetes.", nodos.size());
         log.info("Para desactivarla: app.seed.enabled=false");
+    }
+
+    /** Red logistica del grupo. Tambien la usan los tests, por eso es publica y estatica. */
+    public static List<Nodo> nodos() {
+        Nodo cd  = new Nodo("CD",  "Centro de Distribucion Barracas", "CENTRO",   0);
+        Nodo dn  = new Nodo("DN",  "Deposito Norte (Vicente Lopez)",  "DEPOSITO", 120);
+        Nodo ds  = new Nodo("DS",  "Deposito Sur (Lanus)",            "DEPOSITO", 150);
+        Nodo dO  = new Nodo("DO",  "Deposito Oeste (Ramos Mejia)",    "DEPOSITO", 100);
+        Nodo pal = new Nodo("PAL", "Palermo",                         "ENTREGA",  40);
+        Nodo cab = new Nodo("CAB", "Caballito",                       "ENTREGA",  35);
+        Nodo si  = new Nodo("SI",  "San Isidro",                      "ENTREGA",  25);
+        Nodo ave = new Nodo("AVE", "Avellaneda",                      "ENTREGA",  30);
+        Nodo qui = new Nodo("QUI", "Quilmes",                         "ENTREGA",  20);
+        Nodo mor = new Nodo("MOR", "Moron",                           "ENTREGA",  28);
+
+        // tramo (origen -> destino, minutos)
+        cd.conectar(pal, 15);
+        cd.conectar(ds, 20);
+        cd.conectar(cab, 22);
+        cd.conectar(dn, 30);   // directo 30, pero CD->PAL->DN = 27
+        cd.conectar(dO, 30);
+        pal.conectar(dn, 12);
+        pal.conectar(cab, 14);
+        dn.conectar(si, 18);
+        cab.conectar(ds, 18);
+        cab.conectar(mor, 28);
+        dO.conectar(mor, 16);
+        dO.conectar(cab, 25);
+        ds.conectar(ave, 12);
+        ds.conectar(qui, 35);  // directo 35, pero DS->AVE->QUI = 32
+        ave.conectar(qui, 20);
+
+        return List.of(cd, dn, ds, dO, pal, cab, si, ave, qui, mor);
+    }
+
+    /** Paquetes a repartir: peso en kg, valor declarado en USD. */
+    public static List<Item> paquetes() {
+        return List.of(
+                new Item("P1", "Notebook",          6, 60, "PAL"),
+                new Item("P2", "Monitor",           5, 48, "CAB"),
+                new Item("P3", "Impresora",         5, 47, "SI"),
+                new Item("P4", "Libros",            2, 14, "AVE"),
+                new Item("P5", "Ropa",              3, 18, "QUI"),
+                new Item("P6", "Herramientas",      8, 40, "MOR"),
+                new Item("P7", "Documentacion",     1,  4, "DN"),
+                new Item("P8", "Repuestos",         4, 12, "DS")
+        );
     }
 }
