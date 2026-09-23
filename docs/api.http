@@ -1,28 +1,37 @@
-### Verificar conexión y datos
+### Verificar conexion y datos   (esperado: 10 vertices, 15 aristas)
 GET http://localhost:8080/api/grafo/resumen
 
 ### Recorridos
-GET http://localhost:8080/api/grafo/dfs?origen=A
-GET http://localhost:8080/api/grafo/bfs?origen=A
+GET http://localhost:8080/api/grafo/dfs?origen=CD
+GET http://localhost:8080/api/grafo/bfs?origen=CD
 
-### Caminos mínimos    (esperado: A->C = 7, A->H = 20)
-GET http://localhost:8080/api/grafo/dijkstra?origen=A&destino=C
-GET http://localhost:8080/api/grafo/dijkstra?origen=A&destino=H
+### Caminos minimos    (esperado: CD->DN = 27 via PAL, CD->QUI = 52, CD->MOR = 46)
+GET http://localhost:8080/api/grafo/dijkstra?origen=CD&destino=DN
+GET http://localhost:8080/api/grafo/dijkstra?origen=CD&destino=QUI
+GET http://localhost:8080/api/grafo/dijkstra?origen=CD&destino=MOR
+GET http://localhost:8080/api/grafo/ucs?origen=CD&destino=PAL
 GET http://localhost:8080/api/grafo/floyd
-GET http://localhost:8080/api/grafo/ucs?origen=A&destino=H
+GET http://localhost:8080/api/grafo/floyd/comparacion
 
-### Arbol de recubrimiento minimo    (esperado: 7 aristas, costo total 27)
-GET http://localhost:8080/api/grafo/prim?origen=A
+### Arbol de recubrimiento minimo    (esperado: 9 aristas, costo total 150)
+GET http://localhost:8080/api/grafo/prim?origen=CD
 GET http://localhost:8080/api/grafo/kruskal
 
 ### Ordenamiento
 GET http://localhost:8080/api/seleccion/quicksort?criterio=ratio
 GET http://localhost:8080/api/seleccion/mergesort?criterio=peso
 
-### Seleccion    (comparar: greedy no deberia igualar a dinamica)
+### Seleccion    (esperado: greedy 78 vs dinamica 95)
 GET http://localhost:8080/api/seleccion/greedy?capacidad=10
 GET http://localhost:8080/api/seleccion/dinamica?capacidad=10
 
-### Backtracking y Branch and Bound
-GET http://localhost:8080/api/grafo/rutas?origen=A&destino=H&costoMaximo=30&saltosMaximos=6
+### Backtracking    (esperado: 4 rutas, 24 nodos con poda vs 30 sin poda)
+GET http://localhost:8080/api/grafo/rutas?origen=CD&destino=QUI&costoMaximo=75&saltosMaximos=5
+
+### Branch and Bound    (esperado: carga maxima 12, cota 11.33)
 GET http://localhost:8080/api/seleccion/repartir?contenedores=3
+
+### Errores manejados (sin stack trace)
+GET http://localhost:8080/api/grafo/dijkstra?origen=QUI&destino=CD
+GET http://localhost:8080/api/grafo/dfs?origen=ZZZ
+GET http://localhost:8080/api/seleccion/dinamica?capacidad=abc
