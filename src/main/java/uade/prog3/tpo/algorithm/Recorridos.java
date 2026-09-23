@@ -3,50 +3,84 @@ package uade.prog3.tpo.algorithm;
 import org.springframework.stereotype.Component;
 import uade.prog3.tpo.service.Grafo;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 
 /**
  * UNIDAD: Grafos I (clase 4)          PUNTAJE: 2 puntos
  *
- * Recorridos sobre grafos. Es lo primero que conviene implementar:
- * es lo mas simple, vale 2 puntos, y ademas DFS es la base estructural
- * del backtracking que van a necesitar mas adelante.
+ * Recorridos sobre grafos. DFS es ademas la base estructural del
+ * backtracking de rutas (clase Backtracking).
  */
 @Component
 public class Recorridos {
 
     /**
-     * Recorrido en profundidad desde un vertice.
+     * Recorrido en profundidad (DFS) desde un vertice, recursivo.
      *
-     * Requisitos:
-     *   - implementacion recursiva o con pila explicita (no usar librerias)
-     *   - marcar visitados para no entrar en ciclos infinitos
-     *   - devolver los ids de los vertices EN EL ORDEN EN QUE SE VISITAN
+     * Se marca el vertice como visitado al ENTRAR en la llamada recursiva y
+     * se recorren sus vecinos en el orden de la lista de adyacencia. La pila
+     * de llamadas cumple el rol de la pila explicita del algoritmo iterativo.
      *
-     * Complejidad esperada: O(V + E) con lista de adyacencia.
-     *
-     * @param grafo grafo cargado en memoria
-     * @param origenId id del vertice de partida
-     * @return lista de ids en orden de visita
+     * Complejidad: O(V + E). Cada vertice entra a la recursion una sola vez
+     * (por el arreglo de visitados) y cada lista de adyacencia se recorre una
+     * sola vez, lo que suma E en total (2E si el grafo es no dirigido).
+     * Espacio: O(V) por el arreglo de visitados y la profundidad de la pila.
      */
     public List<String> dfs(Grafo grafo, String origenId) {
-        throw new PendienteDeImplementar("DFS");
+        int origen = grafo.indiceDe(origenId);
+        boolean[] visitado = new boolean[grafo.cantidadVertices()];
+        List<String> orden = new ArrayList<>();
+        dfsRecursivo(grafo, origen, visitado, orden);
+        return orden;
+    }
+
+    private void dfsRecursivo(Grafo grafo, int u, boolean[] visitado, List<String> orden) {
+        visitado[u] = true;
+        orden.add(grafo.idDe(u));
+        for (Grafo.Arista a : grafo.vecinos(u)) {
+            if (!visitado[a.destino()]) {
+                dfsRecursivo(grafo, a.destino(), visitado, orden);
+            }
+        }
     }
 
     /**
-     * Recorrido en anchura desde un vertice.
+     * Recorrido en anchura (BFS) desde un vertice, con cola FIFO.
      *
-     * Requisitos:
-     *   - usar una cola FIFO
-     *   - marcar como visitado AL ENCOLAR, no al desencolar
-     *   - devolver los ids en orden de visita
+     * El vertice se marca como visitado AL ENCOLAR. Si se marcara al
+     * desencolar, un mismo vertice podria entrar varias veces a la cola y
+     * el orden de visita dejaria de ser el de BFS.
      *
-     * Complejidad esperada: O(V + E).
+     * Complejidad: O(V + E). Cada vertice se encola y desencola exactamente
+     * una vez (O(1) cada operacion sobre ArrayDeque) y cada arista se examina
+     * una vez desde su origen.
+     * Espacio: O(V) por la cola y el arreglo de visitados.
      *
-     * Para el coloquio: saber explicar por que BFS da el camino minimo
-     * en cantidad de aristas pero NO en costo cuando el grafo es ponderado.
+     * BFS encuentra el camino con MENOS ARISTAS desde el origen, pero no el de
+     * menor costo: no mira el peso de las aristas. Para eso esta Dijkstra.
      */
     public List<String> bfs(Grafo grafo, String origenId) {
-        throw new PendienteDeImplementar("BFS");
+        int origen = grafo.indiceDe(origenId);
+        boolean[] visitado = new boolean[grafo.cantidadVertices()];
+        List<String> orden = new ArrayList<>();
+        Deque<Integer> cola = new ArrayDeque<>();
+
+        visitado[origen] = true;
+        cola.add(origen);
+
+        while (!cola.isEmpty()) {
+            int u = cola.poll();
+            orden.add(grafo.idDe(u));
+            for (Grafo.Arista a : grafo.vecinos(u)) {
+                if (!visitado[a.destino()]) {
+                    visitado[a.destino()] = true;
+                    cola.add(a.destino());
+                }
+            }
+        }
+        return orden;
     }
 }
