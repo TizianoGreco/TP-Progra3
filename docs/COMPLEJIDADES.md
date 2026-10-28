@@ -49,7 +49,7 @@ Sobre el grafo del grupo: V = 10, E = 15, n = 8.
 - **Backtracking.** En un grafo completo, cada camino simple de origen a destino es una
   permutación de un subconjunto de los V−2 intermedios: `Σ (V−2)!/(V−2−j)!` ≈ e·(V−2)!,
   de ahí el O(V!). La poda por viabilidad (costo o saltos excedidos) no cambia el peor caso
-  pero en la práctica reduce los nodos explorados (30 → 21 con ≤ 60 min en el grafo del
+  pero en la práctica reduce los nodos explorados (30 → 18 con ≤ 30 km en el grafo del
   grupo).
 - **Branch & Bound.** El árbol completo tiene k^n hojas (cada ítem en cada contenedor). La
   cota inferior `max(carga máxima actual, suma/k)` es optimista, así que nunca poda el

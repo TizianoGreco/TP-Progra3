@@ -11,7 +11,7 @@ import java.util.List;
  *
  * Problema del dominio: enumerar todas las rutas de reparto posibles entre
  * dos puntos de la red que no superen un tiempo maximo ni una cantidad
- * maxima de tramos, sin pasar dos veces por el mismo punto.
+ * maxima de rutas, sin pasar dos veces por el mismo punto.
  */
 @Component
 public class Backtracking {

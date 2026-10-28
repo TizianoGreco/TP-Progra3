@@ -31,7 +31,7 @@ class RecorridosTest {
     @Test
     void bfsDesdeUnaHojaSoloSeVisitaASiMisma() {
         Grafo g = GrafoDePrueba.redLogistica(true);
-        assertEquals(List.of("QUI"), recorridos.bfs(g, "QUI"), "QUI no tiene tramos de salida");
+        assertEquals(List.of("QUI"), recorridos.bfs(g, "QUI"), "QUI no tiene rutas de salida");
     }
 
     @Test

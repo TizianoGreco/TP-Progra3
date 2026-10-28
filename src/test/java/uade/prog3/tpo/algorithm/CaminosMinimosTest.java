@@ -18,7 +18,7 @@ class CaminosMinimosTest {
     void dijkstraEligeElCaminoIndirectoCuandoEsMasBarato() {
         Grafo g = GrafoDePrueba.redLogistica(true);
         CaminosMinimos.Camino c = caminos.dijkstra(g, "CD", "DN");
-        assertEquals(27.0, c.costoTotal(), "directo cuesta 30, via Palermo 15+12=27");
+        assertEquals(17.0, c.costoTotal(), "directo son 19 km, via Palermo 9+8=17");
         assertEquals(List.of("CD", "PAL", "DN"), c.vertices());
     }
 
@@ -26,7 +26,7 @@ class CaminosMinimosTest {
     void dijkstraReconstruyeElCaminoCompletoAQuilmes() {
         Grafo g = GrafoDePrueba.redLogistica(true);
         CaminosMinimos.Camino c = caminos.dijkstra(g, "CD", "QUI");
-        assertEquals(52.0, c.costoTotal(), "CD->DS->AVE->QUI = 20+12+20");
+        assertEquals(27.0, c.costoTotal(), "CD->DS->AVE->QUI = 10+5+12");
         assertEquals(List.of("CD", "DS", "AVE", "QUI"), c.vertices());
     }
 
@@ -34,7 +34,7 @@ class CaminosMinimosTest {
     void dijkstraAMoronVaPorElDepositoOeste() {
         Grafo g = GrafoDePrueba.redLogistica(true);
         CaminosMinimos.Camino c = caminos.dijkstra(g, "CD", "MOR");
-        assertEquals(46.0, c.costoTotal(), "via DO 30+16=46 contra via CAB 22+28=50");
+        assertEquals(23.0, c.costoTotal(), "via DO 18+5=23 contra via CAB 7+17=24");
         assertEquals(List.of("CD", "DO", "MOR"), c.vertices());
     }
 
@@ -69,12 +69,12 @@ class CaminosMinimosTest {
     @Test
     void ucsDaElMismoCostoQueDijkstraExpandiendoMenosNodos() {
         Grafo g = GrafoDePrueba.redLogistica(true);
-        CaminosMinimos.Camino dijkstra = caminos.dijkstra(g, "CD", "PAL");
-        CaminosMinimos.Camino ucs = caminos.ucs(g, "CD", "PAL");
+        CaminosMinimos.Camino dijkstra = caminos.dijkstra(g, "CD", "CAB");
+        CaminosMinimos.Camino ucs = caminos.ucs(g, "CD", "CAB");
         assertEquals(dijkstra.costoTotal(), ucs.costoTotal());
         assertEquals(dijkstra.vertices(), ucs.vertices());
         assertEquals(10, dijkstra.nodosExpandidos(), "Dijkstra recorre todo el grafo alcanzable");
-        assertEquals(2, ucs.nodosExpandidos(), "UCS corta al expandir PAL, el mas cercano a CD");
+        assertEquals(2, ucs.nodosExpandidos(), "UCS corta al expandir CAB, el mas cercano a CD");
     }
 
     // ---------------- Floyd-Warshall ----------------
@@ -83,9 +83,9 @@ class CaminosMinimosTest {
     void floydCoincideConDijkstraEnTodosLosPares() {
         Grafo g = GrafoDePrueba.redLogistica(true);
         Map<String, Double> d = caminos.floydWarshall(g);
-        assertEquals(52.0, d.get("CD->QUI"));
-        assertEquals(27.0, d.get("CD->DN"));
-        assertEquals(64.0, d.get("PAL->QUI"), "PAL->CAB->DS->AVE->QUI = 14+18+12+20");
+        assertEquals(27.0, d.get("CD->QUI"));
+        assertEquals(17.0, d.get("CD->DN"));
+        assertEquals(34.0, d.get("PAL->QUI"), "PAL->CAB->DS->AVE->QUI = 6+11+5+12");
         assertEquals(0.0, d.get("SI->SI"));
         assertNull(d.get("QUI->CD"), "los pares inalcanzables no se informan");
     }

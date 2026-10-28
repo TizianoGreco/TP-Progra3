@@ -102,7 +102,7 @@ public class GrafoController {
         return arbolRecubrimiento.kruskal(grafoService.cargar(false));
     }
 
-    /** GET /api/grafo/rutas?origen=CD&destino=QUI&costoMaximo=75&saltosMaximos=5 */
+    /** GET /api/grafo/rutas?origen=CD&destino=QUI&costoMaximo=37&saltosMaximos=5 */
     @GetMapping("/rutas")
     public Backtracking.ResultadoRutas rutas(@RequestParam String origen,
                                              @RequestParam String destino,

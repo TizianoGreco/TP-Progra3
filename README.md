@@ -1,8 +1,8 @@
-# TPO Programación III — Red logística de reparto (AMBA)
+# TPO Programación III — Red logística de depósitos y centros de distribución (AMBA)
 
 Trabajo Práctico Obligatorio de Programación III (3.4.077), UADE, 2° cuatrimestre 2026.
 Sistema Spring Boot + Neo4j que implementa los algoritmos de la materia sobre una
-red logística de distribución de paquetes en el Área Metropolitana de Buenos Aires.
+red logística de depósitos y centros de distribución del Área Metropolitana de Buenos Aires.
 
 Partimos del [scaffold de la materia](https://github.com/Mancaceresuade/tpo-scaffold-2026):
 modelo, conexión a la base y endpoints ya cableados. Todo lo que hay en `algorithm/`
@@ -18,76 +18,76 @@ es implementación propia, sin librerías.
 
 ## Dominio
 
-Una empresa de logística reparte paquetes desde un centro de distribución a depósitos
-regionales y puntos de entrega del AMBA. Los camiones circulan por tramos de ruta
-planificados y hay que decidir qué recorrer, qué cargar y cómo repartir la carga.
+**Red logística de depósitos y centros de distribución.** Una empresa de logística mueve
+paquetes entre sus centros de distribución y sus depósitos del AMBA. Los camiones circulan
+por rutas entre ellos y hay que decidir qué recorrer, qué cargar y cómo repartir la carga.
 
 | Concepto | En el dominio | En el modelo |
 |---|---|---|
-| **Nodo** | Un punto de la red: el centro de distribución (`CENTRO`), un depósito regional (`DEPOSITO`) o un punto de entrega (`ENTREGA`). El atributo `valor` es la demanda diaria de paquetes del punto. | `Nodo` |
-| **Arista** | Un tramo de ruta planificado entre dos puntos, con sentido de circulación (los recorridos salen del centro hacia la periferia). | relación `CONECTA` |
-| **Costo de la arista** | **Tiempo de viaje del tramo, en minutos.** "La conexión entre Barracas y Palermo cuesta 15 minutos." | `Conexion.costo` |
+| **Nodo** | Un centro de distribución (`CENTRO`) o un depósito (`DEPOSITO`). El atributo `valor` es la demanda diaria de paquetes del nodo. | `Nodo` |
+| **Arista** | Una ruta entre dos nodos, con sentido de circulación (los recorridos salen del centro de Barracas hacia la periferia). | relación `CONECTA` |
+| **Peso de la arista** | **Distancia de la ruta, en kilómetros.** "La ruta de Barracas a Palermo mide 9 km." | `Conexion.costo` |
 | **Item** | Un paquete a transportar, con **peso en kg** (lo que consume de la capacidad del vehículo) y **valor declarado en USD** (lo que se busca maximizar). | `Item` |
 
 Las tres preguntas de la consigna:
 
-1. **¿Qué número tiene la arista?** Minutos de viaje. Habilita Dijkstra (ruta más rápida),
-   Prim y Kruskal (red mínima de tramos que conecta todos los puntos).
+1. **¿Qué número tiene la arista?** Kilómetros. Habilita Dijkstra (camino más corto),
+   Prim y Kruskal (red mínima de rutas que conecta todos los nodos).
 2. **¿Tiene sentido el camino más barato pasando por intermedios?** Sí: de Barracas a
-   Quilmes conviene pasar por el Depósito Sur y Avellaneda (52 min) antes que ir directo
-   al depósito y de ahí a Quilmes (55 min).
+   Quilmes conviene pasar por el CD Sur y el depósito Avellaneda (27 km) antes que ir al
+   CD Sur y de ahí directo a Quilmes (29 km).
 3. **¿Hay algo que seleccionar bajo capacidad?** Sí: qué paquetes cargar en un vehículo de
    N kg maximizando el valor transportado (greedy, mochila 0/1), y cómo repartir todos los
    paquetes entre k vehículos minimizando la carga del más cargado (Branch & Bound).
 
 ### El grafo
 
-10 nodos y 15 tramos. Costos en minutos.
+10 nodos (4 centros de distribución y 6 depósitos) y 15 rutas. Distancias en km.
 
 ```
-                 18
+                 12
         SI <------------ DN
                        ^  ^
-                    12 |  | 30
+                     8 |  | 19
                        |  |
-                15    PAL <----- CD -----> DO
-       (CD -> PAL) ^   |         |  30   / |
-                   |   | 14      |      /  | 16
-                   |   v         | 22  / 25|
+                 9    PAL <----- CD -----> DO
+       (CD -> PAL) ^   |         |  18   / |
+                   |   | 6       |      /  | 5
+                   |   v         | 7   / 12|
                    |  CAB <-----+-----/    v
                    |   | \                MOR
-                   |   |  \ 28 (CAB -> MOR)
-                   |18 |
-                   |   v         20
+                   |   |  \ 17 (CAB -> MOR)
+                   |11 |
+                   |   v         10
                    |  DS <------ CD
                        | \
-                    12 |  \ 35
+                     5 |  \ 19
                        v   \
                       AVE --> QUI
-                          20
+                          12
 ```
 
-Lista de tramos (origen → destino, minutos):
+Lista de rutas (origen → destino, km):
 
-| Tramo | min | Tramo | min | Tramo | min |
+| Ruta | km | Ruta | km | Ruta | km |
 |---|---|---|---|---|---|
-| CD → PAL | 15 | PAL → DN | 12 | DO → MOR | 16 |
-| CD → DS | 20 | PAL → CAB | 14 | DO → CAB | 25 |
-| CD → CAB | 22 | DN → SI | 18 | DS → AVE | 12 |
-| CD → DN | 30 | CAB → DS | 18 | DS → QUI | 35 |
-| CD → DO | 30 | CAB → MOR | 28 | AVE → QUI | 20 |
+| CD → PAL | 9 | PAL → DN | 8 | DO → MOR | 5 |
+| CD → DS | 10 | PAL → CAB | 6 | DO → CAB | 12 |
+| CD → CAB | 7 | DN → SI | 12 | DS → AVE | 5 |
+| CD → DN | 19 | CAB → DS | 11 | DS → QUI | 19 |
+| CD → DO | 18 | CAB → MOR | 17 | AVE → QUI | 12 |
 
 | Id | Nodo | Tipo |
 |---|---|---|
 | CD | Centro de Distribución Barracas | CENTRO |
-| DN | Depósito Norte (Vicente López) | DEPOSITO |
-| DS | Depósito Sur (Lanús) | DEPOSITO |
-| DO | Depósito Oeste (Ramos Mejía) | DEPOSITO |
-| PAL, CAB, SI, AVE, QUI, MOR | Palermo, Caballito, San Isidro, Avellaneda, Quilmes, Morón | ENTREGA |
+| DN | Centro de Distribución Norte (Vicente López) | CENTRO |
+| DS | Centro de Distribución Sur (Lanús) | CENTRO |
+| DO | Centro de Distribución Oeste (Ramos Mejía) | CENTRO |
+| PAL, CAB, SI, AVE, QUI, MOR | Depósitos Palermo, Caballito, San Isidro, Avellaneda, Quilmes, Morón | DEPOSITO |
 
-El grafo está armado a propósito para que el camino más rápido no sea el directo en
-varios pares (CD→DN: directo 30, vía PAL 27; DS→QUI: directo 35, vía AVE 32), para que
-como no dirigido sea conexo (MST de 9 tramos y 150 min) y para que haya 8 rutas simples
+El grafo está armado a propósito para que el camino más corto no sea el directo en
+varios pares (CD→DN: directo 19 km, vía PAL 17; DS→QUI: directo 19, vía AVE 17), para que
+como no dirigido sea conexo (MST de 9 rutas y 77 km) y para que haya 8 rutas simples
 distintas de CD a QUI para el backtracking.
 
 ### Los paquetes
@@ -110,13 +110,13 @@ Con un vehículo de **10 kg**, el greedy por ratio carga {P1, P4, P7} = 78 USD; 
 
 | Consulta | Resultado | Cálculo |
 |---|---|---|
-| Dijkstra CD → DN | 27 min, CD→PAL→DN | 15 + 12, gana al directo (30) |
-| Dijkstra CD → QUI | 52 min, CD→DS→AVE→QUI | 20 + 12 + 20 |
-| Dijkstra CD → MOR | 46 min, CD→DO→MOR | 30 + 16, gana a CD→CAB→MOR (50) |
-| Prim / Kruskal | 9 tramos, 150 min | 12+12+14+15+16+18+18+20+25 |
+| Dijkstra CD → DN | 17 km, CD→PAL→DN | 9 + 8, gana al directo (19) |
+| Dijkstra CD → QUI | 27 km, CD→DS→AVE→QUI | 10 + 5 + 12 |
+| Dijkstra CD → MOR | 23 km, CD→DO→MOR | 18 + 5, gana a CD→CAB→MOR (24) |
+| Prim / Kruskal | 9 rutas, 77 km | 5+5+6+7+8+10+12+12+12 |
 | Greedy, capacidad 10 | 78 USD | P1 + P4 + P7 |
 | Mochila 0/1, capacidad 10 | 95 USD | P2 + P3 |
-| Rutas CD → QUI, ≤ 75 min | 4 rutas | 52, 55, 72, 75 |
+| Rutas CD → QUI, ≤ 37 km | 4 rutas | 27, 29, 35, 37 |
 | Reparto en 3 vehículos | carga máxima 12 kg | {8,4} {6,5,1} {5,3,2}; cota 34/3 = 11.33 |
 
 ## Arranque
@@ -164,13 +164,13 @@ para ejecutar están en [docs/api.http](docs/api.http).
 | GET | `/api/seleccion/dinamica?capacidad=10` | Mochila 0/1 con PD | 1 (PD) |
 | GET | `/api/seleccion/quicksort?criterio=ratio` | QuickSort | 1 |
 | GET | `/api/seleccion/mergesort?criterio=peso` | MergeSort | (con QuickSort) |
-| GET | `/api/grafo/rutas?origen=CD&destino=QUI&costoMaximo=75&saltosMaximos=5` | Backtracking | 1 |
+| GET | `/api/grafo/rutas?origen=CD&destino=QUI&costoMaximo=37&saltosMaximos=5` | Backtracking | 1 |
 | GET | `/api/seleccion/repartir?contenedores=3` | Branch & Bound | 1 |
 
 ## Estructura
 
 ```
-model/          Nodo, Conexion (tramo con costo en minutos), Item (paquete)
+model/          Nodo, Conexion (ruta con distancia en km), Item (paquete)
 repository/     acceso a Neo4j (repositorios bloqueantes)
 service/        Grafo (lista de adyacencia en memoria) y GrafoService (carga)
 algorithm/      TODOS los algoritmos. Sin librerias, sin acceso a la base

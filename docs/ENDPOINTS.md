@@ -1,7 +1,7 @@
 # Documentación de endpoints
 
 Todos los ejemplos están tomados de la aplicación corriendo contra la red logística del
-grupo (ver README). `V` es la cantidad de nodos (10) y `E` la cantidad de tramos (15);
+grupo (ver README). `V` es la cantidad de nodos (10) y `E` la cantidad de rutas (15);
 `n` la cantidad de paquetes (8).
 
 Convenciones de error (ningún endpoint devuelve un stack trace):
@@ -60,7 +60,7 @@ adyacencia del `Grafo`.
 ### GET /api/grafo/bfs
 
 Recorrido en anchura desde un nodo: primero los vecinos directos, después los que están a
-dos tramos, etc.
+dos rutas de distancia, etc.
 
 **Parámetros:** `origen` (id del nodo de partida)
 
@@ -80,14 +80,14 @@ Espacio O(V).
 
 **Estructura usada:** cola FIFO (`ArrayDeque`) + `boolean[] visitado`.
 
-BFS da el camino con menos tramos, no el más rápido: a `DN` llega en 1 tramo (30 min)
-cuando Dijkstra encuentra 2 tramos en 27 min.
+BFS da el camino con menos rutas, no el más corto: a `DN` llega en 1 ruta (19 km)
+cuando Dijkstra encuentra 2 rutas que suman 17 km.
 
 ---
 
 ### GET /api/grafo/dijkstra
 
-Ruta más rápida (menor suma de minutos) entre dos puntos, con el camino reconstruido.
+Camino más corto (menor suma de kilómetros) entre dos nodos, con el camino reconstruido.
 
 **Parámetros:** `origen`, `destino` (ids)
 
@@ -95,13 +95,13 @@ Ruta más rápida (menor suma de minutos) entre dos puntos, con el camino recons
 
 **Respuesta:**
 ```json
-{"vertices":["CD","DS","AVE","QUI"],"costoTotal":52.0,"nodosExpandidos":10}
+{"vertices":["CD","DS","AVE","QUI"],"costoTotal":27.0,"nodosExpandidos":10}
 ```
-Otros verificados a mano: `CD→DN` = 27 por `[CD,PAL,DN]` (el directo cuesta 30);
-`CD→MOR` = 46 por `[CD,DO,MOR]` (vía CAB serían 50).
+Otros verificados a mano: `CD→DN` = 17 km por `[CD,PAL,DN]` (el directo son 19);
+`CD→MOR` = 23 km por `[CD,DO,MOR]` (vía CAB serían 24).
 
-**Errores:** 400 si hay un tramo con costo negativo (el algoritmo no aplica); 422 si el
-destino no es alcanzable (`QUI→CD`, porque los tramos tienen sentido).
+**Errores:** 400 si hay una ruta con distancia negativa (el algoritmo no aplica); 422 si el
+destino no es alcanzable (`QUI→CD`, porque las rutas tienen sentido).
 
 **Complejidad:** O((V + E) log V). Cada relajación exitosa inserta una entrada en el heap
 (a lo sumo E inserciones) y cada vértice se expande una vez (V extracciones útiles, las
@@ -121,11 +121,11 @@ Mismo resultado, menos nodos expandidos.
 
 **Parámetros:** `origen`, `destino`
 
-**Ejemplo:** `GET /api/grafo/ucs?origen=CD&destino=PAL`
+**Ejemplo:** `GET /api/grafo/ucs?origen=CD&destino=CAB`
 
 **Respuesta:**
 ```json
-{"vertices":["CD","PAL"],"costoTotal":15.0,"nodosExpandidos":2}
+{"vertices":["CD","CAB"],"costoTotal":7.0,"nodosExpandidos":2}
 ```
 Dijkstra sobre la misma consulta devuelve el mismo camino con `nodosExpandidos: 10`:
 recorre todo lo alcanzable aunque el destino esté al lado.
@@ -139,8 +139,8 @@ porción del grafo con distancia menor o igual a la del destino.
 
 ### GET /api/grafo/prim
 
-Árbol de recubrimiento mínimo: el conjunto de tramos de menor tiempo total que mantiene
-conectados todos los puntos de la red (tratada como no dirigida).
+Árbol de recubrimiento mínimo: el conjunto de rutas de menor distancia total que mantiene
+conectados todos los nodos de la red (tratada como no dirigida).
 
 **Parámetros:** `origen` (nodo desde el que crece el árbol)
 
@@ -149,14 +149,14 @@ conectados todos los puntos de la red (tratada como no dirigida).
 **Respuesta:**
 ```json
 {"aristas":[
-  {"origen":"CD","destino":"PAL","costo":15.0},{"origen":"PAL","destino":"DN","costo":12.0},
-  {"origen":"PAL","destino":"CAB","costo":14.0},{"origen":"DN","destino":"SI","costo":18.0},
-  {"origen":"CAB","destino":"DS","costo":18.0},{"origen":"DS","destino":"AVE","costo":12.0},
-  {"origen":"AVE","destino":"QUI","costo":20.0},{"origen":"CAB","destino":"DO","costo":25.0},
-  {"origen":"DO","destino":"MOR","costo":16.0}],
- "costoTotal":150.0}
+  {"origen":"CD","destino":"CAB","costo":7.0},{"origen":"CAB","destino":"PAL","costo":6.0},
+  {"origen":"PAL","destino":"DN","costo":8.0},{"origen":"CD","destino":"DS","costo":10.0},
+  {"origen":"DS","destino":"AVE","costo":5.0},{"origen":"DN","destino":"SI","costo":12.0},
+  {"origen":"AVE","destino":"QUI","costo":12.0},{"origen":"CAB","destino":"DO","costo":12.0},
+  {"origen":"DO","destino":"MOR","costo":5.0}],
+ "costoTotal":77.0}
 ```
-9 aristas = V − 1. Desde cualquier origen el costo es 150.
+9 aristas = V − 1. Desde cualquier origen el costo es 77 km.
 
 **Errores:** 422 si el grafo no es conexo.
 
@@ -172,7 +172,7 @@ es rala (E ≈ 1.5 V): 15·log 10 ≈ 50 operaciones contra 100.
 
 ### GET /api/grafo/kruskal
 
-Mismo árbol de recubrimiento mínimo, construido ordenando todos los tramos por tiempo y
+Mismo árbol de recubrimiento mínimo, construido ordenando todas las rutas por distancia y
 agregando los que no cierran ciclo.
 
 **Parámetros:** ninguno
@@ -182,15 +182,15 @@ agregando los que no cierran ciclo.
 **Respuesta:**
 ```json
 {"aristas":[
-  {"origen":"DN","destino":"PAL","costo":12.0},{"origen":"DS","destino":"AVE","costo":12.0},
-  {"origen":"PAL","destino":"CAB","costo":14.0},{"origen":"CD","destino":"PAL","costo":15.0},
-  {"origen":"DO","destino":"MOR","costo":16.0},{"origen":"DN","destino":"SI","costo":18.0},
-  {"origen":"DS","destino":"CAB","costo":18.0},{"origen":"AVE","destino":"QUI","costo":20.0},
-  {"origen":"DO","destino":"CAB","costo":25.0}],
- "costoTotal":150.0}
+  {"origen":"DS","destino":"AVE","costo":5.0},{"origen":"DO","destino":"MOR","costo":5.0},
+  {"origen":"PAL","destino":"CAB","costo":6.0},{"origen":"CD","destino":"CAB","costo":7.0},
+  {"origen":"DN","destino":"PAL","costo":8.0},{"origen":"CD","destino":"DS","costo":10.0},
+  {"origen":"DN","destino":"SI","costo":12.0},{"origen":"DO","destino":"CAB","costo":12.0},
+  {"origen":"AVE","destino":"QUI","costo":12.0}],
+ "costoTotal":77.0}
 ```
-Cálculo a mano: tramos ordenados 12, 12, 14, 15, 16, 18, 18, **20 (CD-DS, ciclo)**, 20,
-**22 (CD-CAB, ciclo)**, 25 → se llega a 9 aristas y se corta.
+Cálculo a mano: rutas ordenadas 5, 5, 6, 7, 8, **9 (CD-PAL, ciclo)**, 10, **11 (CAB-DS,
+ciclo)**, 12, 12, 12 → se llega a 9 aristas y se corta.
 
 **Errores:** 422 si el grafo no es conexo (quedan varias componentes).
 
@@ -208,7 +208,7 @@ Prim vs. Kruskal: en grafos ralos rinden parecido y Kruskal es más simple; en g
 
 ### GET /api/grafo/floyd
 
-Tiempo mínimo entre **todos** los pares de puntos. Programación dinámica sobre la matriz
+Distancia mínima entre **todos** los pares de nodos. Programación dinámica sobre la matriz
 de adyacencia.
 
 **Parámetros:** ninguno
@@ -217,9 +217,9 @@ de adyacencia.
 
 **Respuesta** (recortada; solo se informan los pares alcanzables):
 ```json
-{"CD->CD":0.0,"CD->DN":27.0,"CD->DS":20.0,"CD->DO":30.0,"CD->PAL":15.0,"CD->CAB":22.0,
- "CD->SI":45.0,"CD->AVE":32.0,"CD->QUI":52.0,"CD->MOR":46.0,"DN->SI":18.0,
- "DS->QUI":32.0,"DO->QUI":75.0,"PAL->QUI":64.0, ...}
+{"CD->CD":0.0,"CD->DN":17.0,"CD->DS":10.0,"CD->DO":18.0,"CD->PAL":9.0,"CD->CAB":7.0,
+ "CD->SI":29.0,"CD->AVE":15.0,"CD->QUI":27.0,"CD->MOR":23.0,"DN->SI":12.0,
+ "DS->QUI":17.0,"DO->QUI":40.0,"PAL->QUI":34.0, ...}
 ```
 
 **Errores:** 422 si hay un ciclo de costo negativo (algún `d[i][i] < 0` al terminar).
@@ -376,22 +376,22 @@ depender de los datos. Espacio O(n) por las listas auxiliares de la mezcla.
 
 ### GET /api/grafo/rutas
 
-Backtracking: todas las rutas simples (sin repetir puntos) entre dos nodos que no superen
-un tiempo máximo ni una cantidad máxima de tramos.
+Backtracking: todas las rutas simples (sin repetir nodos) entre dos nodos que no superen
+una distancia máxima ni una cantidad máxima de rutas.
 
-**Parámetros:** `origen`, `destino`, `costoMaximo` (minutos, default 1000),
-`saltosMaximos` (tramos, default 10)
+**Parámetros:** `origen`, `destino`, `costoMaximo` (km, default 1000),
+`saltosMaximos` (rutas, default 10)
 
-**Ejemplo:** `GET /api/grafo/rutas?origen=CD&destino=QUI&costoMaximo=75&saltosMaximos=5`
+**Ejemplo:** `GET /api/grafo/rutas?origen=CD&destino=QUI&costoMaximo=37&saltosMaximos=5`
 
 **Respuesta:**
 ```json
 {"rutas":[
-  {"vertices":["CD","DS","AVE","QUI"],"costoTotal":52.0},
-  {"vertices":["CD","DS","QUI"],"costoTotal":55.0},
-  {"vertices":["CD","CAB","DS","AVE","QUI"],"costoTotal":72.0},
-  {"vertices":["CD","CAB","DS","QUI"],"costoTotal":75.0}],
- "nodosExploradosConPoda":24,"nodosExploradosSinPoda":30,"ramasPodadas":5}
+  {"vertices":["CD","DS","AVE","QUI"],"costoTotal":27.0},
+  {"vertices":["CD","DS","QUI"],"costoTotal":29.0},
+  {"vertices":["CD","CAB","DS","AVE","QUI"],"costoTotal":35.0},
+  {"vertices":["CD","CAB","DS","QUI"],"costoTotal":37.0}],
+ "nodosExploradosConPoda":23,"nodosExploradosSinPoda":30,"ramasPodadas":4}
 ```
 
 **Nodos explorados con y sin poda** (hito 8), misma consulta CD → QUI:
@@ -399,12 +399,12 @@ un tiempo máximo ni una cantidad máxima de tramos.
 | Restricción | Rutas | Con poda | Sin poda | Ramas podadas |
 |---|---|---|---|---|
 | sin restricción | 8 | 30 | 30 | 0 |
-| ≤ 75 min, ≤ 5 tramos | 4 | 24 | 30 | 5 |
-| ≤ 60 min | 2 | 21 | 30 | 6 |
-| ≤ 3 tramos | 3 | 23 | 30 | 5 |
+| ≤ 37 km, ≤ 5 rutas | 4 | 23 | 30 | 4 |
+| ≤ 30 km | 2 | 18 | 30 | 8 |
+| ≤ 3 rutas | 3 | 23 | 30 | 5 |
 
 "Sin poda" enumera todos los caminos simples y filtra al final; "con poda" descarta la rama
-apenas el tiempo acumulado o los tramos superan el límite, sin entrar. En una red rala de 10
+apenas la distancia acumulada o las rutas superan el límite, sin entrar. En una red rala de 10
 nodos la diferencia es chica; en un grafo denso los caminos simples crecen como V! y la poda
 es lo que hace tratable el problema.
 

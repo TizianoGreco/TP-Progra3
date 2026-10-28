@@ -13,9 +13,9 @@ class BacktrackingTest {
 
     /**
      * Rutas simples CD -> QUI en la red dirigida (calculadas a mano):
-     *   CD-DS-QUI 55 | CD-DS-AVE-QUI 52 | CD-CAB-DS-QUI 75 | CD-CAB-DS-AVE-QUI 72
-     *   CD-PAL-CAB-DS-QUI 82 | CD-PAL-CAB-DS-AVE-QUI 79
-     *   CD-DO-CAB-DS-QUI 90 | CD-DO-CAB-DS-AVE-QUI 87
+     *   CD-DS-QUI 29 | CD-DS-AVE-QUI 27 | CD-CAB-DS-QUI 37 | CD-CAB-DS-AVE-QUI 35
+     *   CD-PAL-CAB-DS-QUI 45 | CD-PAL-CAB-DS-AVE-QUI 43
+     *   CD-DO-CAB-DS-QUI 60 | CD-DO-CAB-DS-AVE-QUI 58
      */
     @Test
     void sinRestriccionesEncuentraLasOchoRutas() {
@@ -32,10 +32,10 @@ class BacktrackingTest {
     @Test
     void laRestriccionDeCostoFiltraRutas() {
         Grafo g = GrafoDePrueba.redLogistica(true);
-        List<Backtracking.Ruta> rutas = backtracking.rutasSimples(g, "CD", "QUI", 75, 10);
+        List<Backtracking.Ruta> rutas = backtracking.rutasSimples(g, "CD", "QUI", 37, 10);
         assertEquals(4, rutas.size());
-        assertTrue(rutas.stream().allMatch(r -> r.costoTotal() <= 75));
-        assertTrue(rutas.stream().anyMatch(r -> r.costoTotal() == 75.0), "el limite es inclusivo");
+        assertTrue(rutas.stream().allMatch(r -> r.costoTotal() <= 37));
+        assertTrue(rutas.stream().anyMatch(r -> r.costoTotal() == 37.0), "el limite es inclusivo");
     }
 
     @Test
@@ -44,14 +44,14 @@ class BacktrackingTest {
         List<Backtracking.Ruta> rutas = backtracking.rutasSimples(g, "CD", "QUI", 1000, 2);
         assertEquals(1, rutas.size());
         assertEquals(List.of("CD", "DS", "QUI"), rutas.get(0).vertices());
-        assertEquals(55.0, rutas.get(0).costoTotal());
+        assertEquals(29.0, rutas.get(0).costoTotal());
     }
 
     @Test
     void laPodaExploraMenosNodosYDaElMismoResultado() {
         Grafo g = GrafoDePrueba.redLogistica(true);
-        Backtracking.ResultadoRutas r = backtracking.buscar(g, "CD", "QUI", 60, 10);
-        assertEquals(2, r.rutas().size(), "solo 55 y 52 entran en 60 minutos");
+        Backtracking.ResultadoRutas r = backtracking.buscar(g, "CD", "QUI", 30, 10);
+        assertEquals(2, r.rutas().size(), "solo 29 y 27 entran en 30 km");
         assertTrue(r.nodosExploradosConPoda() < r.nodosExploradosSinPoda(),
                 "con poda=" + r.nodosExploradosConPoda() + " sin poda=" + r.nodosExploradosSinPoda());
     }

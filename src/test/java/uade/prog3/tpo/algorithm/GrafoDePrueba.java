@@ -16,7 +16,7 @@ final class GrafoDePrueba {
 
     private GrafoDePrueba() { }
 
-    /** La red logistica del grupo (10 nodos, 15 tramos). */
+    /** La red logistica del grupo (10 nodos, 15 rutas). */
     static Grafo redLogistica(boolean dirigido) {
         Grafo g = new Grafo(dirigido);
         List<Nodo> nodos = CargaInicial.nodos();
