@@ -15,3 +15,6 @@ target/
 *.env
 !.env.example
 application-local.properties
+
+### Claude Code local ###
+.claude/
