@@ -15,7 +15,7 @@ import static org.springframework.data.neo4j.core.schema.Relationship.Direction.
  * ESTE ES EL PUNTO QUE CADA GRUPO DEBE ADAPTAR A SU DOMINIO.
  *
  * Ejemplos de especializacion:
- *   - Red logistica  -> Nodo = deposito o punto de entrega;  tipo = "DEPOSITO" | "CLIENTE"
+ *   - Red logistica  -> Nodo = deposito o centro de distribucion; tipo = "DEPOSITO" | "CENTRO"
  *   - Transporte     -> Nodo = estacion;                     tipo = "SUBTE" | "TREN"
  *   - Red social     -> Nodo = usuario;                      tipo = "PERSONA" | "ORGANIZACION"
  *

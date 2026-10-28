@@ -1,3 +1,6 @@
+# Persona 1 (implementado): resumen, recorridos, Dijkstra y UCS.
+# El resto responde 501 hasta que Persona 2 y Persona 3 implementen su parte.
+
 ### Verificar conexion y datos   (esperado: 10 vertices, 15 aristas)
 GET http://localhost:8080/api/grafo/resumen
 
@@ -5,15 +8,15 @@ GET http://localhost:8080/api/grafo/resumen
 GET http://localhost:8080/api/grafo/dfs?origen=CD
 GET http://localhost:8080/api/grafo/bfs?origen=CD
 
-### Caminos minimos    (esperado: CD->DN = 27 via PAL, CD->QUI = 52, CD->MOR = 46)
+### Caminos minimos    (esperado: CD->DN = 17 km via PAL, CD->QUI = 27, CD->MOR = 23)
 GET http://localhost:8080/api/grafo/dijkstra?origen=CD&destino=DN
 GET http://localhost:8080/api/grafo/dijkstra?origen=CD&destino=QUI
 GET http://localhost:8080/api/grafo/dijkstra?origen=CD&destino=MOR
-GET http://localhost:8080/api/grafo/ucs?origen=CD&destino=PAL
+GET http://localhost:8080/api/grafo/ucs?origen=CD&destino=CAB
 GET http://localhost:8080/api/grafo/floyd
 GET http://localhost:8080/api/grafo/floyd/comparacion
 
-### Arbol de recubrimiento minimo    (esperado: 9 aristas, costo total 150)
+### Arbol de recubrimiento minimo    (esperado: 9 aristas, costo total 77 km)
 GET http://localhost:8080/api/grafo/prim?origen=CD
 GET http://localhost:8080/api/grafo/kruskal
 
@@ -25,8 +28,8 @@ GET http://localhost:8080/api/seleccion/mergesort?criterio=peso
 GET http://localhost:8080/api/seleccion/greedy?capacidad=10
 GET http://localhost:8080/api/seleccion/dinamica?capacidad=10
 
-### Backtracking    (esperado: 4 rutas, 24 nodos con poda vs 30 sin poda)
-GET http://localhost:8080/api/grafo/rutas?origen=CD&destino=QUI&costoMaximo=75&saltosMaximos=5
+### Backtracking    (esperado: 4 rutas, 23 nodos con poda vs 30 sin poda)
+GET http://localhost:8080/api/grafo/rutas?origen=CD&destino=QUI&costoMaximo=37&saltosMaximos=5
 
 ### Branch and Bound    (esperado: carga maxima 12, cota 11.33)
 GET http://localhost:8080/api/seleccion/repartir?contenedores=3

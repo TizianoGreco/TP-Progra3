@@ -13,19 +13,19 @@ import uade.prog3.tpo.repository.NodoRepository;
 import java.util.List;
 
 /**
- * Carga el dominio del grupo: la red logistica de reparto de paquetes en el
- * AMBA. Ver README.md para la descripcion completa y el diagrama.
+ * Carga el dominio del grupo: la red logistica de depositos y centros de
+ * distribucion del AMBA. Ver README.md para la descripcion completa.
  *
- * Nodos: un centro de distribucion (CD), tres depositos regionales y seis
- * puntos de entrega. Aristas: tramos de ruta planificados, con sentido de
- * circulacion; el costo es el TIEMPO DE VIAJE EN MINUTOS.
+ * Nodos: cuatro centros de distribucion (CD central en Barracas y tres
+ * regionales) y seis depositos. Aristas: rutas entre ellos, con sentido de
+ * circulacion; el costo es la DISTANCIA EN KILOMETROS.
  * Items: paquetes con peso (kg) y valor declarado (USD).
  *
  * El grafo esta armado para que:
- *   - el camino mas rapido NO sea el directo en varios pares
- *     (CD->DN directo 30, via PAL 27; DS->QUI directo 35, via AVE 32)
- *   - sea conexo como no dirigido, para que exista el MST (costo 150)
- *   - todos los costos sean positivos, para que Dijkstra aplique
+ *   - el camino mas corto NO sea el directo en varios pares
+ *     (CD->DN directo 19 km, via PAL 17; DS->QUI directo 19, via AVE 17)
+ *   - sea conexo como no dirigido, para que exista el MST (77 km)
+ *   - todas las distancias sean positivas, para que Dijkstra aplique
  *   - haya varias rutas simples entre CD y QUI para el backtracking (8)
  *
  * Los paquetes estan calibrados para que, con capacidad 10 kg, greedy por
@@ -56,39 +56,39 @@ public class CargaInicial implements CommandLineRunner {
         nodoRepository.saveAll(nodos);
         itemRepository.saveAll(paquetes());
 
-        log.info("Carga inicial completada: {} nodos, 15 tramos, 8 paquetes.", nodos.size());
+        log.info("Carga inicial completada: {} nodos, 15 rutas, 8 paquetes.", nodos.size());
         log.info("Para desactivarla: app.seed.enabled=false");
     }
 
     /** Red logistica del grupo. Tambien la usan los tests, por eso es publica y estatica. */
     public static List<Nodo> nodos() {
-        Nodo cd  = new Nodo("CD",  "Centro de Distribucion Barracas", "CENTRO",   0);
-        Nodo dn  = new Nodo("DN",  "Deposito Norte (Vicente Lopez)",  "DEPOSITO", 120);
-        Nodo ds  = new Nodo("DS",  "Deposito Sur (Lanus)",            "DEPOSITO", 150);
-        Nodo dO  = new Nodo("DO",  "Deposito Oeste (Ramos Mejia)",    "DEPOSITO", 100);
-        Nodo pal = new Nodo("PAL", "Palermo",                         "ENTREGA",  40);
-        Nodo cab = new Nodo("CAB", "Caballito",                       "ENTREGA",  35);
-        Nodo si  = new Nodo("SI",  "San Isidro",                      "ENTREGA",  25);
-        Nodo ave = new Nodo("AVE", "Avellaneda",                      "ENTREGA",  30);
-        Nodo qui = new Nodo("QUI", "Quilmes",                         "ENTREGA",  20);
-        Nodo mor = new Nodo("MOR", "Moron",                           "ENTREGA",  28);
+        Nodo cd  = new Nodo("CD",  "Centro de Distribucion Barracas",              "CENTRO",   0);
+        Nodo dn  = new Nodo("DN",  "Centro de Distribucion Norte (Vicente Lopez)", "CENTRO",   120);
+        Nodo ds  = new Nodo("DS",  "Centro de Distribucion Sur (Lanus)",           "CENTRO",   150);
+        Nodo dO  = new Nodo("DO",  "Centro de Distribucion Oeste (Ramos Mejia)",   "CENTRO",   100);
+        Nodo pal = new Nodo("PAL", "Deposito Palermo",                             "DEPOSITO", 40);
+        Nodo cab = new Nodo("CAB", "Deposito Caballito",                           "DEPOSITO", 35);
+        Nodo si  = new Nodo("SI",  "Deposito San Isidro",                          "DEPOSITO", 25);
+        Nodo ave = new Nodo("AVE", "Deposito Avellaneda",                          "DEPOSITO", 30);
+        Nodo qui = new Nodo("QUI", "Deposito Quilmes",                             "DEPOSITO", 20);
+        Nodo mor = new Nodo("MOR", "Deposito Moron",                               "DEPOSITO", 28);
 
-        // tramo (origen -> destino, minutos)
-        cd.conectar(pal, 15);
-        cd.conectar(ds, 20);
-        cd.conectar(cab, 22);
-        cd.conectar(dn, 30);   // directo 30, pero CD->PAL->DN = 27
-        cd.conectar(dO, 30);
-        pal.conectar(dn, 12);
-        pal.conectar(cab, 14);
-        dn.conectar(si, 18);
-        cab.conectar(ds, 18);
-        cab.conectar(mor, 28);
-        dO.conectar(mor, 16);
-        dO.conectar(cab, 25);
-        ds.conectar(ave, 12);
-        ds.conectar(qui, 35);  // directo 35, pero DS->AVE->QUI = 32
-        ave.conectar(qui, 20);
+        // ruta (origen -> destino, km)
+        cd.conectar(pal, 9);
+        cd.conectar(ds, 10);
+        cd.conectar(cab, 7);
+        cd.conectar(dn, 19);   // directo 19, pero CD->PAL->DN = 17
+        cd.conectar(dO, 18);
+        pal.conectar(dn, 8);
+        pal.conectar(cab, 6);
+        dn.conectar(si, 12);
+        cab.conectar(ds, 11);
+        cab.conectar(mor, 17);
+        dO.conectar(mor, 5);
+        dO.conectar(cab, 12);
+        ds.conectar(ave, 5);
+        ds.conectar(qui, 19);  // directo 19, pero DS->AVE->QUI = 17
+        ave.conectar(qui, 12);
 
         return List.of(cd, dn, ds, dO, pal, cab, si, ave, qui, mor);
     }

@@ -6,7 +6,6 @@ import uade.prog3.tpo.service.Grafo;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -15,6 +14,7 @@ import java.util.PriorityQueue;
  * UNIDAD: Grafos II (clase 5) y PD sobre grafos (clase 8)
  * PUNTAJE: forma parte de los 3 puntos de "Dijkstra, Prim, Kruskal"
  *          y de 1 punto de programacion dinamica (Floyd-Warshall).
+ * A CARGO DE: Persona 1 (Dijkstra y UCS) y Persona 3 (Floyd-Warshall)
  */
 @Component
 public class CaminosMinimos {
@@ -176,101 +176,33 @@ public class CaminosMinimos {
     }
 
     // ------------------------------------------------------------------
-    // Floyd-Warshall
+    // Floyd-Warshall (A CARGO DE: Persona 3)
     // ------------------------------------------------------------------
 
     /**
      * Floyd-Warshall: costo minimo entre TODOS los pares de vertices.
      *
-     * Programacion dinamica sobre la matriz de adyacencia. El subproblema es
-     * d_k[i][j] = costo minimo de i a j usando como intermedios solo los
-     * vertices 0..k-1, y la recurrencia es
-     *     d_k[i][j] = min( d_{k-1}[i][j] , d_{k-1}[i][k] + d_{k-1}[k][j] ).
-     * El bucle de k va SIEMPRE por fuera: en la iteracion k la fila k y la
-     * columna k no cambian, por eso alcanza con una sola matriz en lugar de
-     * V matrices (optimizacion de espacio de O(V^3) a O(V^2)).
+     * Requisitos:
+     *   - trabajar sobre la matriz de adyacencia (grafo.matrizDeAdyacencia())
+     *   - el bucle del vertice intermedio k va SIEMPRE por fuera de los de i y j
+     *   - detectar ciclos de costo negativo revisando la diagonal al terminar
      *
-     * Deteccion de ciclos negativos: si al terminar algun d[i][i] < 0, hay un
-     * ciclo de costo negativo que pasa por i y las distancias no tienen
-     * sentido; se falla con un mensaje claro.
+     * Complejidad esperada: O(V^3) en tiempo, O(V^2) en espacio.
      *
-     * Complejidad: O(V^3) tiempo (tres bucles anidados sobre V), O(V^2)
-     * espacio (la matriz). Estructura: matriz de adyacencia double[V][V].
-     *
-     * Devuelve solo los pares alcanzables (los no alcanzables tendrian costo
-     * infinito, que no es un numero JSON valido).
+     * Devuelve un mapa "origen->destino" con el costo minimo de cada par
+     * alcanzable. Valores esperados: CD->QUI 27, CD->DN 17, PAL->QUI 34.
      */
     public Map<String, Double> floydWarshall(Grafo grafo) {
-        double[][] d = correrFloyd(grafo);
-        int n = grafo.cantidadVertices();
-
-        Map<String, Double> resultado = new LinkedHashMap<>();
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (d[i][j] != Grafo.INFINITO) {
-                    resultado.put(grafo.idDe(i) + "->" + grafo.idDe(j), d[i][j]);
-                }
-            }
-        }
-        return resultado;
-    }
-
-    private double[][] correrFloyd(Grafo grafo) {
-        double[][] d = grafo.matrizDeAdyacencia();
-        int n = grafo.cantidadVertices();
-
-        for (int k = 0; k < n; k++) {
-            for (int i = 0; i < n; i++) {
-                if (d[i][k] == Grafo.INFINITO) {
-                    continue; // no hay como llegar a k desde i: nada que mejorar
-                }
-                for (int j = 0; j < n; j++) {
-                    double viaK = d[i][k] + d[k][j];
-                    if (viaK < d[i][j]) {
-                        d[i][j] = viaK;
-                    }
-                }
-            }
-        }
-
-        for (int i = 0; i < n; i++) {
-            if (d[i][i] < 0) {
-                throw new IllegalStateException("Floyd-Warshall: el grafo tiene un ciclo de costo negativo "
-                        + "que pasa por " + grafo.idDe(i) + "; las distancias minimas no estan definidas");
-            }
-        }
-        return d;
+        throw new PendienteDeImplementar("Floyd-Warshall");
     }
 
     /**
      * Hito 7: compara el trabajo de Floyd-Warshall contra correr Dijkstra V
      * veces (una desde cada vertice) y verifica que ambos den los mismos
-     * costos.
-     *
-     * Para Floyd se cuenta V^3 (operaciones de la recurrencia); para Dijkstra
-     * se suman los vertices expandidos y las relajaciones de las V corridas.
-     *
-     * Complejidad: O(V^3 + V (V + E) log V), dominada por Floyd en grafos
-     * densos y por las V corridas de Dijkstra en grafos ralos.
+     * costos. Para Dijkstra puede reutilizar correrDijkstra(grafo, origen, -1),
+     * que devuelve dist[], los vertices expandidos y las relajaciones.
      */
     public ComparacionTodosContraTodos compararConDijkstra(Grafo grafo) {
-        validarPesosNoNegativos(grafo);
-        int n = grafo.cantidadVertices();
-        double[][] floyd = correrFloyd(grafo);
-
-        int expandidos = 0;
-        long relajaciones = 0;
-        boolean coinciden = true;
-        for (int origen = 0; origen < n; origen++) {
-            CorridaDijkstra corrida = correrDijkstra(grafo, origen, -1);
-            expandidos += corrida.expandidos();
-            relajaciones += corrida.relajaciones();
-            for (int j = 0; j < n; j++) {
-                if (Double.compare(corrida.dist()[j], floyd[origen][j]) != 0) {
-                    coinciden = false;
-                }
-            }
-        }
-        return new ComparacionTodosContraTodos((int) n, (long) n * n * n, expandidos, relajaciones, coinciden);
+        throw new PendienteDeImplementar("Comparacion Floyd-Warshall contra Dijkstra");
     }
 }
