@@ -6,15 +6,29 @@ red logística de depósitos y centros de distribución del Área Metropolitana 
 
 Partimos del [scaffold de la materia](https://github.com/Mancaceresuade/tpo-scaffold-2026):
 modelo, conexión a la base y endpoints ya cableados. Todo lo que hay en `algorithm/`
-es implementación propia, sin librerías.
+es implementación propia, sin librerías. Los algoritmos que todavía no están
+implementados responden `501 Not Implemented` con un mensaje claro.
 
 ## Integrantes
 
 | Nombre completo | Usuario de GitHub |
 |---|---|
 | Tiziano Greco | [@TizianoGreco](https://github.com/TizianoGreco) |
-| _(completar)_ | _(completar)_ |
-| _(completar)_ | _(completar)_ |
+| Nicolas Cortese | [@nicortese](https://github.com/nicortese) |
+| _(completar: Juanse)_ | _(completar)_ |
+
+## Reparto del trabajo
+
+| Persona | Bloque | Algoritmos y tareas | Puntos | Estado |
+|---|---|---|---|---|
+| 1 — Tiziano Greco | Grafos y configuración | Spring Boot + Neo4j, carga del grafo del dominio, BFS, DFS, Dijkstra (y UCS, opcional) | 3 | hecho, con tests y fichas |
+| 2 — _(completar)_ | Ordenamiento y expansión mínima | QuickSort, MergeSort, Prim, Kruskal, Greedy | 4 | pendiente |
+| 3 — _(completar)_ | Optimización y búsqueda | Mochila 0/1, Floyd-Warshall, Backtracking, Branch & Bound; consolidar README y documentación general | 3 | pendiente |
+
+Cada persona implementa sus algoritmos en `algorithm/` (los stubs ya tienen la firma, los
+requisitos y el valor esperado sobre el grafo del grupo), agrega sus tests en
+`src/test/.../algorithm/` y su ficha en [docs/ENDPOINTS.md](docs/ENDPOINTS.md). Los valores
+esperados están en [Resultados verificados a mano](#resultados-verificados-a-mano).
 
 ## Dominio
 
@@ -108,6 +122,10 @@ Con un vehículo de **10 kg**, el greedy por ratio carga {P1, P4, P7} = 78 USD; 
 
 ## Resultados verificados a mano
 
+Son los valores que tienen que dar los algoritmos sobre el grafo y los paquetes del grupo.
+Los de Persona 1 ya están cubiertos por tests; el resto es la referencia para los tests de
+Persona 2 y Persona 3.
+
 | Consulta | Resultado | Cálculo |
 |---|---|---|
 | Dijkstra CD → DN | 17 km, CD→PAL→DN | 9 + 8, gana al directo (19) |
@@ -144,28 +162,28 @@ Si la base ya tiene datos, la carga inicial no se ejecuta. Para recargar el domi
 
 ## Endpoints
 
-Cada algoritmo tiene su ficha con ejemplo real, complejidad justificada y estructura de
-datos en [docs/ENDPOINTS.md](docs/ENDPOINTS.md). El informe de complejidades completo
+Cada algoritmo implementado tiene su ficha con ejemplo real, complejidad justificada y
+estructura de datos en [docs/ENDPOINTS.md](docs/ENDPOINTS.md). El informe de complejidades completo
 (hito 10) está en [docs/COMPLEJIDADES.md](docs/COMPLEJIDADES.md). Las requests listas
 para ejecutar están en [docs/api.http](docs/api.http).
 
-| Método | Endpoint | Algoritmo | Puntos |
-|---|---|---|---|
-| GET | `/api/grafo/resumen` | verificación | — |
-| GET | `/api/grafo/dfs?origen=CD` | DFS | 1 |
-| GET | `/api/grafo/bfs?origen=CD` | BFS | 1 |
-| GET | `/api/grafo/dijkstra?origen=CD&destino=QUI` | Dijkstra | 1 |
-| GET | `/api/grafo/prim?origen=CD` | Prim | 1 |
-| GET | `/api/grafo/kruskal` | Kruskal | 1 |
-| GET | `/api/grafo/floyd` | Floyd-Warshall | 1 (PD) |
-| GET | `/api/grafo/floyd/comparacion` | Floyd vs. Dijkstra × V | — |
-| GET | `/api/grafo/ucs?origen=CD&destino=QUI` | UCS | opcional |
-| GET | `/api/seleccion/greedy?capacidad=10` | Greedy | 1 |
-| GET | `/api/seleccion/dinamica?capacidad=10` | Mochila 0/1 con PD | 1 (PD) |
-| GET | `/api/seleccion/quicksort?criterio=ratio` | QuickSort | 1 |
-| GET | `/api/seleccion/mergesort?criterio=peso` | MergeSort | (con QuickSort) |
-| GET | `/api/grafo/rutas?origen=CD&destino=QUI&costoMaximo=37&saltosMaximos=5` | Backtracking | 1 |
-| GET | `/api/seleccion/repartir?contenedores=3` | Branch & Bound | 1 |
+| Método | Endpoint | Algoritmo | Persona | Estado |
+|---|---|---|---|---|
+| GET | `/api/grafo/resumen` | verificación | 1 | hecho |
+| GET | `/api/grafo/dfs?origen=CD` | DFS | 1 | hecho |
+| GET | `/api/grafo/bfs?origen=CD` | BFS | 1 | hecho |
+| GET | `/api/grafo/dijkstra?origen=CD&destino=QUI` | Dijkstra | 1 | hecho |
+| GET | `/api/grafo/ucs?origen=CD&destino=QUI` | UCS (opcional) | 1 | hecho |
+| GET | `/api/seleccion/quicksort?criterio=ratio` | QuickSort | 2 | 501 |
+| GET | `/api/seleccion/mergesort?criterio=peso` | MergeSort | 2 | 501 |
+| GET | `/api/grafo/prim?origen=CD` | Prim | 2 | 501 |
+| GET | `/api/grafo/kruskal` | Kruskal | 2 | 501 |
+| GET | `/api/seleccion/greedy?capacidad=10` | Greedy | 2 | 501 |
+| GET | `/api/seleccion/dinamica?capacidad=10` | Mochila 0/1 con PD | 3 | 501 |
+| GET | `/api/grafo/floyd` | Floyd-Warshall | 3 | 501 |
+| GET | `/api/grafo/floyd/comparacion` | Floyd vs. Dijkstra × V | 3 | 501 |
+| GET | `/api/grafo/rutas?origen=CD&destino=QUI&costoMaximo=37&saltosMaximos=5` | Backtracking | 3 | 501 |
+| GET | `/api/seleccion/repartir?contenedores=3` | Branch & Bound | 3 | 501 |
 
 ## Estructura
 
@@ -173,7 +191,7 @@ para ejecutar están en [docs/api.http](docs/api.http).
 model/          Nodo, Conexion (ruta con distancia en km), Item (paquete)
 repository/     acceso a Neo4j (repositorios bloqueantes)
 service/        Grafo (lista de adyacencia en memoria) y GrafoService (carga)
-algorithm/      TODOS los algoritmos. Sin librerias, sin acceso a la base
+algorithm/      todos los algoritmos (los pendientes, como stub con 501). Sin librerias
 controller/     endpoints: cargan el grafo una vez y delegan
 config/         manejo de errores: ningun endpoint devuelve un stack trace
 seed/           carga del dominio propio
@@ -188,13 +206,12 @@ Decisiones de diseño que hacen a la nota:
 - Toda excepción se traduce a JSON con `estado` y `detalle`: 400 para parámetros
   inválidos, 422 para estados imposibles (destino inalcanzable, grafo no conexo, ciclo
   negativo), 404 para rutas inexistentes, 500 genérico con el detalle en el log.
-- Kruskal, greedy y Branch & Bound reutilizan el MergeSort propio para ordenar.
 
 ## Uso de IA
 
-Se usó **Claude Code** (Anthropic) como asistente de programación durante el desarrollo:
-para escribir la primera versión de los algoritmos y sus tests a partir de las
-especificaciones del scaffold, para redactar la documentación de complejidades y para
-verificar los resultados contra el cálculo a mano sobre el grafo del grupo. Todo el código
-generado fue leído, ejecutado y revisado por los integrantes, que pueden explicar y
-reescribir cada algoritmo; el Segundo Parcial es la verificación de eso.
+En la parte de Persona 1 se usó **Claude Code** (Anthropic) como asistente de programación:
+para escribir la primera versión de la carga del grafo, BFS, DFS, Dijkstra y sus tests a
+partir de las especificaciones del scaffold, para redactar su documentación y para verificar
+los resultados contra el cálculo a mano sobre el grafo del grupo. Todo el código generado
+fue leído, ejecutado y revisado, y se puede explicar y reescribir; el Segundo Parcial es la
+verificación de eso. _(Persona 2 y Persona 3: declarar acá el uso de IA en su parte.)_

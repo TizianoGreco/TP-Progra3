@@ -1,3 +1,6 @@
+# Persona 1 (implementado): resumen, recorridos, Dijkstra y UCS.
+# El resto responde 501 hasta que Persona 2 y Persona 3 implementen su parte.
+
 ### Verificar conexion y datos   (esperado: 10 vertices, 15 aristas)
 GET http://localhost:8080/api/grafo/resumen
 
