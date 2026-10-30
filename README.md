@@ -190,7 +190,7 @@ el óptimo de la mochila 0/1 es {P2, P3} = **95 USD**.
 | QuickSort | divide y vencerás | `GET /api/seleccion/quicksort?criterio=ratio` | O(n log n) prom., O(n²) peor | 1 | ⏳ |
 | MergeSort | divide y vencerás | `GET /api/seleccion/mergesort?criterio=peso` | O(n log n) | (con QuickSort) | ⏳ |
 | Greedy | greedy | `GET /api/seleccion/greedy?capacidad=10` | O(n log n) | 1 | ⏳ |
-| Mochila 0/1 | programación dinámica | `GET /api/seleccion/dinamica?capacidad=10` | O(n · W) | 1 | ⏳ |
+| Mochila 0/1 | programación dinámica | `GET /api/seleccion/dinamica?capacidad=10` | O(n · W) | 1 | ✅ |
 | Floyd-Warshall | programación dinámica | `GET /api/grafo/floyd` | O(V³) | (PD) | ⏳ |
 | Backtracking | backtracking | `GET /api/grafo/rutas?origen=CD&destino=QUI&costoMaximo=37&saltosMaximos=5` | O(V!) peor caso | 1 | ⏳ |
 | Branch & Bound | ramificación y poda | `GET /api/seleccion/repartir?contenedores=3` | O(kⁿ) peor caso | 1 | ⏳ |

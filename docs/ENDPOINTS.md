@@ -137,9 +137,58 @@ porción del grafo con distancia menor o igual a la del destino.
 
 ---
 
+### GET /api/seleccion/dinamica
+
+Mochila 0/1: elige un subconjunto de paquetes que maximiza el valor declarado en USD sin
+superar la capacidad del vehículo en kg. Cada paquete entra entero o no entra.
+
+**Parámetros:** `capacidad` (kg, entero)
+
+**Ejemplo:** `GET /api/seleccion/dinamica?capacidad=10`
+
+**Respuesta:**
+```json
+{"elegidos":[{"id":"P2","nombre":"Monitor","peso":5.0,"valor":48.0,"nodoId":"CAB"},{"id":"P3","nombre":"Impresora","peso":5.0,"valor":47.0,"nodoId":"SI"}],"valorTotal":95.0,"pesoTotal":10.0,"tecnica":"programacion dinamica"}
+```
+P2 + P3 = 48 + 47 = 95 USD y 5 + 5 = 10 kg. El greedy por valor/peso, sobre los mismos
+paquetes y la misma capacidad, carga {P1, P4, P7} = 60 + 14 + 4 = **78 USD**. Ese es el
+contraejemplo del hito 6: el criterio goloso no da el óptimo.
+
+Tabla `dp[i][w]`: fila i = primeros i paquetes (P1…P8), columna w = capacidad en kg. La
+celda es el máximo valor en USD.
+
+| | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| — | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| P1 (6 kg, 60) | 0 | 0 | 0 | 0 | 0 | 0 | 60 | 60 | 60 | 60 | 60 |
+| P2 (5 kg, 48) | 0 | 0 | 0 | 0 | 0 | 48 | 60 | 60 | 60 | 60 | 60 |
+| P3 (5 kg, 47) | 0 | 0 | 0 | 0 | 0 | 48 | 60 | 60 | 60 | 60 | **95** |
+| P4 (2 kg, 14) | 0 | 0 | 14 | 14 | 14 | 48 | 60 | 62 | 74 | 74 | 95 |
+| P5 (3 kg, 18) | 0 | 0 | 14 | 18 | 18 | 48 | 60 | 62 | 74 | 78 | 95 |
+| P6 (8 kg, 40) | 0 | 0 | 14 | 18 | 18 | 48 | 60 | 62 | 74 | 78 | 95 |
+| P7 (1 kg, 4) | 0 | 4 | 14 | 18 | 22 | 48 | 60 | 64 | 74 | 78 | 95 |
+| P8 (4 kg, 12) | 0 | 4 | 14 | 18 | 22 | 48 | 60 | 64 | 74 | 78 | 95 |
+
+En la columna 10 el salto a 95 aparece al incorporar P3: `dp[2][5] + 47 = 48 + 47`.
+Ningún paquete posterior mejora esa celda. El recorrido hacia atrás desde `dp[8][10]`
+salta P8, P7, P6, P5 y P4 porque la columna 10 no cambia; toma P3 porque 95 > 60 y la
+capacidad baja a 5 kg; ahí toma P2 porque 48 > 0.
+
+**Errores:** 400 si `capacidad` es negativa.
+
+**Complejidad:** O(n · W). Hay una celda por paquete y por kilo de capacidad, y cada una
+se resuelve en O(1) mirando la fila anterior. Espacio O(n · W): hace falta la tabla
+completa para recuperar los paquetes. Es pseudopolinómica porque W es el valor de la
+capacidad, no la cantidad de paquetes.
+
+**Estructura usada:** `double[][] dp` de tamaño `(n+1) × (W+1)`. El peso se indexa con
+`Math.ceil` para que la columna sea entera.
+
+---
+
 ## Pendientes
 
-Las fichas de Prim, Kruskal, QuickSort, MergeSort y Greedy (Persona 2) y de Mochila 0/1,
+Las fichas de Prim, Kruskal, QuickSort, MergeSort y Greedy (Persona 2) y de
 Floyd-Warshall, Backtracking y Branch & Bound (Persona 3) se agregan acá a medida que cada
 algoritmo se implementa, con el mismo formato: descripción, parámetros, ejemplo real,
 errores, complejidad justificada y estructura de datos. Mientras tanto esos endpoints
