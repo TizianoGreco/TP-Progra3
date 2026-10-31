@@ -3,6 +3,7 @@ package uade.prog3.tpo.algorithm;
 import org.springframework.stereotype.Component;
 import uade.prog3.tpo.model.Item;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -43,17 +44,75 @@ public class Seleccion {
     /**
      * PROGRAMACION DINAMICA (Persona 3): mochila 0/1 con tabla dp.
      *
-     * Requisitos:
-     *   - construir la tabla dp[i][j] de forma iterativa (bottom-up)
-     *   - RECUPERAR EL CAMINO: devolver que items componen la solucion optima,
-     *     no solo el valor maximo. Eso se hace recorriendo la tabla hacia atras
-     *   - los pesos deben ser enteros o discretizarse para indexar la tabla
+     * dp[i][w] es el maximo valor usando los primeros i items con capacidad w.
+     * Cada celda elige el maximo entre no llevar el item i y llevarlo, si entra:
+     * dp[i][w] = max( dp[i-1][w] , dp[i-1][w - peso_i] + valor_i ).
+     * Se llena de izquierda a derecha y de arriba hacia abajo (bottom-up):
+     * cada celda lee solo la fila anterior, que ya esta resuelta.
      *
-     * Complejidad esperada: O(n * W) en tiempo y en espacio.
+     * Los items elegidos se recuperan recorriendo la tabla hacia atras desde
+     * dp[n][capacidad]: si la celda mejoro respecto de la fila anterior, ese
+     * item entra y la capacidad baja su peso. El orden de la lista sigue el
+     * de la entrada.
      *
-     * Para el coloquio: explicar por que O(n*W) es pseudopolinomica.
+     * El peso se indexa con Math.ceil para que la columna sea un entero. El
+     * peso informado en el resultado es el real, no el redondeado.
+     *
+     * Tiempo y espacio O(n * W): una celda por item y por kilo de capacidad.
+     * Es pseudopolinomica: W es el valor de la capacidad, no la cantidad de
+     * bits con que se lo escribe. Con capacidad enorme la tabla no entra en
+     * memoria aunque n sea chico.
      */
     public Resultado programacionDinamica(List<Item> items, int capacidad) {
-        throw new PendienteDeImplementar("Mochila 0/1 con programacion dinamica");
+        if (capacidad < 0) {
+            throw new IllegalArgumentException(
+                    "La capacidad no puede ser negativa: " + capacidad);
+        }
+        int n = items.size();
+        int[] pesoIndice = new int[n];
+        for (int i = 0; i < n; i++) {
+            double peso = items.get(i).getPeso();
+            if (peso < 0) {
+                throw new IllegalArgumentException(
+                        "El item " + items.get(i).getId() + " tiene peso negativo: " + peso);
+            }
+            pesoIndice[i] = (int) Math.ceil(peso);
+        }
+
+        double[][] dp = new double[n + 1][capacidad + 1];
+        for (int i = 1; i <= n; i++) {
+            int peso = pesoIndice[i - 1];
+            double valor = items.get(i - 1).getValor();
+            for (int w = 0; w <= capacidad; w++) {
+                dp[i][w] = dp[i - 1][w];
+                if (peso <= w) {
+                    double llevandolo = dp[i - 1][w - peso] + valor;
+                    if (llevandolo > dp[i][w]) {
+                        dp[i][w] = llevandolo;
+                    }
+                }
+            }
+        }
+
+        List<Item> alReves = new ArrayList<>();
+        int w = capacidad;
+        for (int i = n; i >= 1; i--) {
+            if (dp[i][w] > dp[i - 1][w]) {
+                alReves.add(items.get(i - 1));
+                w -= pesoIndice[i - 1];
+            }
+        }
+        List<Item> elegidos = new ArrayList<>();
+        for (int i = alReves.size() - 1; i >= 0; i--) {
+            elegidos.add(alReves.get(i));
+        }
+
+        double valorTotal = 0;
+        double pesoTotal = 0;
+        for (Item item : elegidos) {
+            valorTotal += item.getValor();
+            pesoTotal += item.getPeso();
+        }
+        return new Resultado(elegidos, valorTotal, pesoTotal, "programacion dinamica");
     }
 }

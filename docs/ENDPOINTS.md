@@ -137,13 +137,187 @@ porción del grafo con distancia menor o igual a la del destino.
 
 ---
 
+### GET /api/seleccion/dinamica
+
+Mochila 0/1: elige un subconjunto de paquetes que maximiza el valor declarado en USD sin
+superar la capacidad del vehículo en kg. Cada paquete entra entero o no entra.
+
+**Parámetros:** `capacidad` (kg, entero)
+
+**Ejemplo:** `GET /api/seleccion/dinamica?capacidad=10`
+
+**Respuesta:**
+```json
+{"elegidos":[{"id":"P2","nombre":"Monitor","peso":5.0,"valor":48.0,"nodoId":"CAB"},{"id":"P3","nombre":"Impresora","peso":5.0,"valor":47.0,"nodoId":"SI"}],"valorTotal":95.0,"pesoTotal":10.0,"tecnica":"programacion dinamica"}
+```
+P2 + P3 = 48 + 47 = 95 USD y 5 + 5 = 10 kg. El greedy por valor/peso, sobre los mismos
+paquetes y la misma capacidad, carga {P1, P4, P7} = 60 + 14 + 4 = **78 USD**. Ese es el
+contraejemplo del hito 6: el criterio goloso no da el óptimo.
+
+Tabla `dp[i][w]`: fila i = primeros i paquetes (P1…P8), columna w = capacidad en kg. La
+celda es el máximo valor en USD.
+
+| | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| — | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| P1 (6 kg, 60) | 0 | 0 | 0 | 0 | 0 | 0 | 60 | 60 | 60 | 60 | 60 |
+| P2 (5 kg, 48) | 0 | 0 | 0 | 0 | 0 | 48 | 60 | 60 | 60 | 60 | 60 |
+| P3 (5 kg, 47) | 0 | 0 | 0 | 0 | 0 | 48 | 60 | 60 | 60 | 60 | **95** |
+| P4 (2 kg, 14) | 0 | 0 | 14 | 14 | 14 | 48 | 60 | 62 | 74 | 74 | 95 |
+| P5 (3 kg, 18) | 0 | 0 | 14 | 18 | 18 | 48 | 60 | 62 | 74 | 78 | 95 |
+| P6 (8 kg, 40) | 0 | 0 | 14 | 18 | 18 | 48 | 60 | 62 | 74 | 78 | 95 |
+| P7 (1 kg, 4) | 0 | 4 | 14 | 18 | 22 | 48 | 60 | 64 | 74 | 78 | 95 |
+| P8 (4 kg, 12) | 0 | 4 | 14 | 18 | 22 | 48 | 60 | 64 | 74 | 78 | 95 |
+
+En la columna 10 el salto a 95 aparece al incorporar P3: `dp[2][5] + 47 = 48 + 47`.
+Ningún paquete posterior mejora esa celda. El recorrido hacia atrás desde `dp[8][10]`
+salta P8, P7, P6, P5 y P4 porque la columna 10 no cambia; toma P3 porque 95 > 60 y la
+capacidad baja a 5 kg; ahí toma P2 porque 48 > 0.
+
+**Errores:** 400 si `capacidad` es negativa.
+
+**Complejidad:** O(n · W). Hay una celda por paquete y por kilo de capacidad, y cada una
+se resuelve en O(1) mirando la fila anterior. Espacio O(n · W): hace falta la tabla
+completa para recuperar los paquetes. Es pseudopolinómica porque W es el valor de la
+capacidad, no la cantidad de paquetes.
+
+**Estructura usada:** `double[][] dp` de tamaño `(n+1) × (W+1)`. El peso se indexa con
+`Math.ceil` para que la columna sea entera.
+
+---
+
+### GET /api/grafo/floyd
+
+Costo mínimo en km entre todos los pares de nodos. Sirve para armar la tabla de distancias
+de la red de una sola vez, en lugar de pedir un camino por vez.
+
+**Parámetros:** ninguno
+
+**Ejemplo:** `GET /api/grafo/floyd`
+
+**Respuesta:**
+```json
+{"CD->CD":0.0,"CD->DN":17.0,"CD->DS":10.0,"CD->DO":18.0,"CD->PAL":9.0,"CD->CAB":7.0,"CD->SI":29.0,"CD->AVE":15.0,"CD->QUI":27.0,"CD->MOR":23.0,"DN->DN":0.0,"DN->SI":12.0,"DS->DS":0.0,"DS->AVE":5.0,"DS->QUI":17.0,"DO->DS":23.0,"DO->DO":0.0,"DO->CAB":12.0,"DO->AVE":28.0,"DO->QUI":40.0,"DO->MOR":5.0,"PAL->DN":8.0,"PAL->DS":17.0,"PAL->PAL":0.0,"PAL->CAB":6.0,"PAL->SI":20.0,"PAL->AVE":22.0,"PAL->QUI":34.0,"PAL->MOR":23.0,"CAB->DS":11.0,"CAB->CAB":0.0,"CAB->AVE":16.0,"CAB->QUI":28.0,"CAB->MOR":17.0,"SI->SI":0.0,"AVE->AVE":0.0,"AVE->QUI":12.0,"QUI->QUI":0.0,"MOR->MOR":0.0}
+```
+Solo entran los pares alcanzables. `CD->DN` queda en 17 km (por Palermo) y no en los 19
+del tramo directo. `CD->QUI` = 27, `PAL->QUI` = 34, `DO->QUI` = 40. `QUI->CD` no aparece:
+desde Quilmes no hay vuelta. La diagonal vale 0.
+
+**Errores:** 422 si hay un ciclo de costo negativo (algún nodo a distancia negativa de sí
+mismo). Un peso negativo suelto, sin ciclo, no es un error: el algoritmo igual encuentra
+el mínimo.
+
+**Complejidad:** O(V³). Para cada posible nodo intermedio se revisan todos los pares, y
+cada revisión es un mínimo en O(1). Espacio O(V²).
+
+**Estructura usada:** matriz `double[][]` copiada de la adyacencia. El bucle del
+intermedio `k` va por fuera de `i` y `j`.
+
+---
+
+### GET /api/grafo/floyd/comparacion
+
+Corre Floyd-Warshall y, aparte, Dijkstra desde cada nodo. Los costos tienen que coincidir.
+La diferencia es cuánto trabajo hace cada uno.
+
+**Parámetros:** ninguno
+
+**Ejemplo:** `GET /api/grafo/floyd/comparacion`
+
+**Respuesta:**
+```json
+{"vertices":10,"operacionesFloyd":1000,"nodosExpandidosDijkstraV":39,"relajacionesDijkstraV":40,"costosCoinciden":true}
+```
+Floyd hace V³ = 10³ = 1000 operaciones. Dijkstra, una vez por nodo, relaja 40 aristas y
+expande 39 nodos. En esta red rala Dijkstra × V trabaja menos; Floyd igual llena toda la
+tabla.
+
+**Complejidad:** O(V³) por Floyd, más O(V · (V + E) log V) por las V corridas de Dijkstra.
+
+**Estructura usada:** la matriz de Floyd y, para Dijkstra, el mismo heap que el endpoint
+de camino mínimo.
+
+---
+
+### GET /api/grafo/rutas
+
+Todas las rutas simples entre dos nodos que no pasen de una distancia en km ni de una
+cantidad de saltos. Un salto es una ruta. No se repite un nodo. El límite es inclusivo:
+37 km incluye la ruta de 37.
+
+**Parámetros:** `origen`, `destino`, `costoMaximo` (km, default 1000), `saltosMaximos`
+(default 10)
+
+**Ejemplo:** `GET /api/grafo/rutas?origen=CD&destino=QUI&costoMaximo=37&saltosMaximos=5`
+
+**Respuesta:**
+```json
+{"rutas":[{"vertices":["CD","DS","AVE","QUI"],"costoTotal":27.0},{"vertices":["CD","DS","QUI"],"costoTotal":29.0},{"vertices":["CD","CAB","DS","AVE","QUI"],"costoTotal":35.0},{"vertices":["CD","CAB","DS","QUI"],"costoTotal":37.0}],"nodosExploradosConPoda":23,"nodosExploradosSinPoda":30,"ramasPodadas":4}
+```
+Sin límite hay 8 rutas (27, 29, 35, 37, 43, 45, 58 y 60 km). Con 30 km quedan 2. Con
+2 saltos queda una sola: `CD → DS → QUI`, 29 km. De QUI a CD la lista va vacía.
+
+Nodos explorados (llamadas del DFS) con poda y sin poda:
+
+| Restricción | Rutas | Con poda | Sin poda | Ramas podadas |
+|---|---:|---:|---:|---:|
+| sin límite (1000 km, 10 saltos) | 8 | 30 | 30 | 0 |
+| ≤ 37 km y 10 saltos | 4 | 23 | 30 | 4 |
+| ≤ 30 km y 10 saltos | 2 | 18 | 30 | 8 |
+| 1000 km y ≤ 2 saltos | 1 | 15 | 30 | 8 |
+
+La poda corta apenas el tramo siguiente se pasa del máximo, sin armar el resto del camino.
+
+**Errores:** 400 si `costoMaximo` es negativo o `saltosMaximos` es menor que 1, o si el
+nodo no existe.
+
+**Complejidad:** O(V!) en el peor caso. Desde cada nodo se puede seguir por cualquiera de
+los que no están en el camino, y el camino puede tener largo V. Espacio O(V).
+
+**Estructura usada:** DFS recursivo, `boolean[]` de visitados y la lista del camino. Al
+volver se desmarca el nodo: ese desmarcado es el retroceso.
+
+---
+
+### GET /api/seleccion/repartir
+
+Reparte todos los paquetes entre k vehículos iguales y minimiza la carga del que queda
+más pesado. Los 8 paquetes suman 34 kg.
+
+**Parámetros:** `contenedores` (k, al menos 1)
+
+**Ejemplo:** `GET /api/seleccion/repartir?contenedores=3`
+
+**Respuesta:**
+```json
+{"porContenedor":{"contenedor1":[{"id":"P1","nombre":"Notebook","peso":6.0,"valor":60.0,"nodoId":"PAL"},{"id":"P2","nombre":"Monitor","peso":5.0,"valor":48.0,"nodoId":"CAB"},{"id":"P7","nombre":"Documentacion","peso":1.0,"valor":4.0,"nodoId":"DN"}],"contenedor2":[{"id":"P3","nombre":"Impresora","peso":5.0,"valor":47.0,"nodoId":"SI"},{"id":"P4","nombre":"Libros","peso":2.0,"valor":14.0,"nodoId":"AVE"},{"id":"P5","nombre":"Ropa","peso":3.0,"valor":18.0,"nodoId":"QUI"}],"contenedor3":[{"id":"P6","nombre":"Herramientas","peso":8.0,"valor":40.0,"nodoId":"MOR"},{"id":"P8","nombre":"Repuestos","peso":4.0,"valor":12.0,"nodoId":"DS"}]},"cargaMaxima":12.0,"cotaInicial":11.333333333333334,"nodosExplorados":217,"nodosPodados":122}
+```
+Con 3 vehículos el más cargado lleva **12 kg** (6+5+1 y 8+4). La cota inicial es
+34/3 ≈ 11,33 kg: no existe un reparto cuyo máximo baje de eso, y como los pesos son
+enteros el óptimo es 12. Con 4 vehículos el máximo es **9 kg** (cota 8,5). Con 2 es
+**17 kg**, y ahí la cota ya es la solución.
+
+La cota de un nodo es `max(carga máxima actual, suma / k)`. Es optimista: el resultado
+final no puede ser menor que lo que un vehículo ya lleva, ni menor que el promedio. Si
+esa cota no mejora el mejor reparto encontrado, la rama se poda. Con 3 vehículos se
+visitan 217 nodos y se podan 122.
+
+**Errores:** 400 si `contenedores` es menor que 1.
+
+**Complejidad:** O(kⁿ) en el peor caso. Cada paquete puede ir a cualquiera de los k
+vehículos. Espacio O(n + k).
+
+**Estructura usada:** DFS recursivo y un `double[]` con la carga de cada vehículo. Si
+dos vehículos pesan lo mismo, el paquete solo se prueba en el de menor índice.
+
+---
+
 ## Pendientes
 
-Las fichas de Prim, Kruskal, QuickSort, MergeSort y Greedy (Persona 2) y de Mochila 0/1,
-Floyd-Warshall, Backtracking y Branch & Bound (Persona 3) se agregan acá a medida que cada
-algoritmo se implementa, con el mismo formato: descripción, parámetros, ejemplo real,
-errores, complejidad justificada y estructura de datos. Mientras tanto esos endpoints
-responden:
+Las fichas de Prim, Kruskal, QuickSort, MergeSort y Greedy (Persona 2) se agregan acá a
+medida que cada algoritmo se implementa, con el mismo formato: descripción, parámetros,
+ejemplo real, errores, complejidad justificada y estructura de datos. Mientras tanto esos
+endpoints responden:
 
 ```json
 {"estado":"PENDIENTE","detalle":"Todavia no esta implementado: Prim"}

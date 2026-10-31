@@ -6,6 +6,7 @@ import uade.prog3.tpo.service.Grafo;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -180,29 +181,93 @@ public class CaminosMinimos {
     // ------------------------------------------------------------------
 
     /**
-     * Floyd-Warshall: costo minimo entre TODOS los pares de vertices.
+     * Floyd-Warshall: costo minimo entre todos los pares de vertices.
      *
-     * Requisitos:
-     *   - trabajar sobre la matriz de adyacencia (grafo.matrizDeAdyacencia())
-     *   - el bucle del vertice intermedio k va SIEMPRE por fuera de los de i y j
-     *   - detectar ciclos de costo negativo revisando la diagonal al terminar
+     * Parte de la matriz de adyacencia. Para cada vertice intermedio k se
+     * prueba si i -> k -> j mejora el costo de i -> j:
+     * d[i][j] = min( d[i][j] , d[i][k] + d[k][j] ).
+     * k va por fuera: cuando se usa k, los caminos que pasan por 0..k-1 ya
+     * estan resueltos.
      *
-     * Complejidad esperada: O(V^3) en tiempo, O(V^2) en espacio.
+     * Al terminar, si algun d[i][i] es negativo hay un ciclo de costo
+     * negativo y el minimo no existe. El mapa solo incluye pares alcanzables
+     * ("ORIGEN->DESTINO"), porque el infinito no se puede mandar en JSON.
      *
-     * Devuelve un mapa "origen->destino" con el costo minimo de cada par
-     * alcanzable. Valores esperados: CD->QUI 27, CD->DN 17, PAL->QUI 34.
+     * Tiempo O(V^3): los tres bucles recorren todos los vertices. Espacio
+     * O(V^2): una sola matriz, que se va pisando.
      */
     public Map<String, Double> floydWarshall(Grafo grafo) {
-        throw new PendienteDeImplementar("Floyd-Warshall");
+        double[][] dist = distanciasFloyd(grafo);
+        Map<String, Double> costos = new LinkedHashMap<>();
+        int n = grafo.cantidadVertices();
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (dist[i][j] < Grafo.INFINITO) {
+                    costos.put(grafo.idDe(i) + "->" + grafo.idDe(j), dist[i][j]);
+                }
+            }
+        }
+        return costos;
     }
 
     /**
-     * Hito 7: compara el trabajo de Floyd-Warshall contra correr Dijkstra V
-     * veces (una desde cada vertice) y verifica que ambos den los mismos
-     * costos. Para Dijkstra puede reutilizar correrDijkstra(grafo, origen, -1),
-     * que devuelve dist[], los vertices expandidos y las relajaciones.
+     * Hito 7: Floyd-Warshall contra Dijkstra corrido una vez desde cada
+     * vertice. Reutiliza correrDijkstra, que devuelve dist[], expandidos y
+     * relajaciones. Las operaciones de Floyd son V^3, una por celda del
+     * triple bucle.
      */
     public ComparacionTodosContraTodos compararConDijkstra(Grafo grafo) {
-        throw new PendienteDeImplementar("Comparacion Floyd-Warshall contra Dijkstra");
+        double[][] dist = distanciasFloyd(grafo);
+        int n = grafo.cantidadVertices();
+        int expandidos = 0;
+        long relajaciones = 0;
+        boolean coinciden = true;
+        for (int origen = 0; origen < n; origen++) {
+            CorridaDijkstra corrida = correrDijkstra(grafo, origen, -1);
+            expandidos += corrida.expandidos();
+            relajaciones += corrida.relajaciones();
+            for (int destino = 0; destino < n; destino++) {
+                if (!mismoCosto(dist[origen][destino], corrida.dist()[destino])) {
+                    coinciden = false;
+                }
+            }
+        }
+        long operacionesFloyd = (long) n * n * n;
+        return new ComparacionTodosContraTodos(n, operacionesFloyd, expandidos, relajaciones, coinciden);
+    }
+
+    /** Matriz de costos minimos. Lanza si hay un ciclo de costo negativo. */
+    private double[][] distanciasFloyd(Grafo grafo) {
+        double[][] dist = grafo.matrizDeAdyacencia();
+        int n = grafo.cantidadVertices();
+        for (int k = 0; k < n; k++) {
+            for (int i = 0; i < n; i++) {
+                if (dist[i][k] == Grafo.INFINITO) {
+                    continue;
+                }
+                for (int j = 0; j < n; j++) {
+                    if (dist[k][j] == Grafo.INFINITO) {
+                        continue;
+                    }
+                    double porK = dist[i][k] + dist[k][j];
+                    if (porK < dist[i][j]) {
+                        dist[i][j] = porK;
+                    }
+                }
+            }
+        }
+        for (int i = 0; i < n; i++) {
+            if (dist[i][i] < 0) {
+                throw new IllegalStateException("Floyd-Warshall: ciclo de costo negativo");
+            }
+        }
+        return dist;
+    }
+
+    private static boolean mismoCosto(double a, double b) {
+        if (a == Grafo.INFINITO || b == Grafo.INFINITO) {
+            return a == b;
+        }
+        return Math.abs(a - b) < 1e-9;
     }
 }

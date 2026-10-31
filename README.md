@@ -31,7 +31,7 @@ de grafos, ordenamiento, selección y optimización de la materia.
 | Nombre completo | Usuario de GitHub | Responsabilidad |
 |---|---|---|
 | Tiziano Greco | [@TizianoGreco](https://github.com/TizianoGreco) | Grafos y configuración |
-| Nicolas Cortese | [@nicortese](https://github.com/nicortese) | _(completar)_ |
+| Nicolas Cortese | [@nicortese](https://github.com/nicortese) | Optimización y búsqueda |
 | _(completar)_ | _(completar)_ | _(completar)_ |
 
 ## Contenido
@@ -190,10 +190,10 @@ el óptimo de la mochila 0/1 es {P2, P3} = **95 USD**.
 | QuickSort | divide y vencerás | `GET /api/seleccion/quicksort?criterio=ratio` | O(n log n) prom., O(n²) peor | 1 | ⏳ |
 | MergeSort | divide y vencerás | `GET /api/seleccion/mergesort?criterio=peso` | O(n log n) | (con QuickSort) | ⏳ |
 | Greedy | greedy | `GET /api/seleccion/greedy?capacidad=10` | O(n log n) | 1 | ⏳ |
-| Mochila 0/1 | programación dinámica | `GET /api/seleccion/dinamica?capacidad=10` | O(n · W) | 1 | ⏳ |
-| Floyd-Warshall | programación dinámica | `GET /api/grafo/floyd` | O(V³) | (PD) | ⏳ |
-| Backtracking | backtracking | `GET /api/grafo/rutas?origen=CD&destino=QUI&costoMaximo=37&saltosMaximos=5` | O(V!) peor caso | 1 | ⏳ |
-| Branch & Bound | ramificación y poda | `GET /api/seleccion/repartir?contenedores=3` | O(kⁿ) peor caso | 1 | ⏳ |
+| Mochila 0/1 | programación dinámica | `GET /api/seleccion/dinamica?capacidad=10` | O(n · W) | 1 | ✅ |
+| Floyd-Warshall | programación dinámica | `GET /api/grafo/floyd` | O(V³) | (PD) | ✅ |
+| Backtracking | backtracking | `GET /api/grafo/rutas?origen=CD&destino=QUI&costoMaximo=37&saltosMaximos=5` | O(V!) peor caso | 1 | ✅ |
+| Branch & Bound | ramificación y poda | `GET /api/seleccion/repartir?contenedores=3` | O(kⁿ) peor caso | 1 | ✅ |
 
 ✅ implementado, con tests y ficha · ⏳ en desarrollo: el endpoint responde
 `501 Not Implemented` con un mensaje claro.
@@ -322,7 +322,7 @@ los algoritmos de su bloque, y todos estudian el conjunto completo.
 |---|---|---|:---:|
 | Grafos y configuración | Tiziano Greco | Spring Boot y Neo4j, carga del dominio, BFS, DFS, Dijkstra (+ UCS) | 3 |
 | Ordenamiento y expansión mínima | _(completar)_ | QuickSort, MergeSort, Prim, Kruskal, Greedy | 4 |
-| Optimización y búsqueda | _(completar)_ | Mochila 0/1, Floyd-Warshall, Backtracking, Branch & Bound, documentación general | 3 |
+| Optimización y búsqueda | Nicolas Cortese | Mochila 0/1, Floyd-Warshall, Backtracking, Branch & Bound, documentación general | 3 |
 
 **Flujo de trabajo:** una rama por bloque o algoritmo, Pull Request a `main` con los tests
 en verde y merge commit para conservar la autoría de cada integrante. Convenciones de
@@ -339,7 +339,11 @@ Conforme a la sección 7 de la consigna, se declara el uso de asistentes de IA:
   la documentación y para verificar los resultados contra el cálculo a mano. Todo el código
   fue leído, ejecutado y revisado, y se puede explicar y reescribir sin asistencia.
 - **_(completar)_ (ordenamiento y expansión mínima).** _(declarar herramienta y uso)_
-- **_(completar)_ (optimización y búsqueda).** _(declarar herramienta y uso)_
+- **Nicolas Cortese (optimización y búsqueda).** Se usó **Cursor** para implementar la
+  mochila 0/1, Floyd-Warshall, el backtracking de rutas y Branch & Bound, con sus tests y
+  las fichas de documentación, a partir de los valores calculados a mano del dominio. Esos
+  resultados se contrastaron con la tabla del grupo: 95 USD en la mochila, las distancias
+  de Floyd, las 8 rutas de Barracas a Quilmes y el reparto de 12 kg en 3 vehículos.
 
 El Segundo Parcial, de codificación en vivo y sin asistentes, es la instancia que verifica
 la comprensión individual de cada algoritmo.
