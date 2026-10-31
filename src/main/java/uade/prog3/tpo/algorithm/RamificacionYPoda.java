@@ -3,6 +3,8 @@ package uade.prog3.tpo.algorithm;
 import org.springframework.stereotype.Component;
 import uade.prog3.tpo.model.Item;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,20 +41,105 @@ public class RamificacionYPoda {
      * Repartir items entre k contenedores identicos minimizando la carga del
      * contenedor mas cargado.
      *
-     * Requisitos:
-     *   - ramificar: cada item puede ir a cualquiera de los k contenedores
-     *   - acotar: definir una cota INFERIOR del makespan alcanzable desde el
-     *     nodo actual. Una cota valida y simple es
-     *         max( carga maxima actual , suma de todos los pesos / k )
-     *   - podar: si la cota es mayor o igual al mejor makespan ya encontrado,
-     *     abandonar la rama
-     *   - la cota tiene que ser OPTIMISTA. Si subestima el potencial de una
-     *     rama se pierden soluciones validas y el resultado deja de ser optimo
+     * Cada item se prueba en cada contenedor. La cota del nodo es
+     * max(carga maxima actual, suma de todos los pesos / k). Es optimista:
+     * el makespan final no puede quedar por debajo de lo que ya cargo un
+     * vehiculo, ni por debajo del promedio si se reparte parejo. Si la cota
+     * es mayor o igual al mejor makespan ya encontrado, esa rama no puede
+     * mejorar y se poda.
      *
-     * Complejidad esperada: exponencial, k^n en el peor caso, mucho menor con
-     * buena poda.
+     * Los vehiculos con la misma carga son indistinguibles: el item solo se
+     * prueba en el de menor indice. No cambia el optimo y corta permutaciones.
+     *
+     * Peor caso O(k^n): n items y k opciones cada uno. Espacio O(n + k),
+     * la pila de la recursion y las cargas.
      */
     public Asignacion repartir(List<Item> items, int cantidadContenedores) {
-        throw new PendienteDeImplementar("Branch and Bound de reparto");
+        if (cantidadContenedores < 1) {
+            throw new IllegalArgumentException(
+                    "La cantidad de contenedores debe ser al menos 1: " + cantidadContenedores);
+        }
+        double suma = 0;
+        double mayor = 0;
+        for (Item item : items) {
+            suma += item.getPeso();
+            if (item.getPeso() > mayor) {
+                mayor = item.getPeso();
+            }
+        }
+        double cotaInicial = Math.max(mayor, suma / cantidadContenedores);
+
+        double[] cargas = new double[cantidadContenedores];
+        List<List<Item>> grupos = new ArrayList<>();
+        for (int j = 0; j < cantidadContenedores; j++) {
+            grupos.add(new ArrayList<>());
+        }
+        Busqueda busqueda = new Busqueda(suma / cantidadContenedores);
+        asignar(items, 0, cargas, grupos, busqueda);
+
+        Map<String, List<Item>> porContenedor = new LinkedHashMap<>();
+        for (int j = 0; j < cantidadContenedores; j++) {
+            porContenedor.put("contenedor" + (j + 1), busqueda.mejorGrupos.get(j));
+        }
+        return new Asignacion(porContenedor, busqueda.mejor, cotaInicial,
+                busqueda.explorados, busqueda.podados);
+    }
+
+    private void asignar(List<Item> items, int indice, double[] cargas,
+                         List<List<Item>> grupos, Busqueda busqueda) {
+        busqueda.explorados++;
+        double cargaMaxima = 0;
+        for (double carga : cargas) {
+            if (carga > cargaMaxima) {
+                cargaMaxima = carga;
+            }
+        }
+        double cota = Math.max(cargaMaxima, busqueda.promedio);
+        if (cota >= busqueda.mejor) {
+            busqueda.podados++;
+            return;
+        }
+        if (indice == items.size()) {
+            busqueda.mejor = cargaMaxima;
+            busqueda.mejorGrupos = new ArrayList<>();
+            for (List<Item> grupo : grupos) {
+                busqueda.mejorGrupos.add(new ArrayList<>(grupo));
+            }
+            return;
+        }
+
+        Item item = items.get(indice);
+        for (int j = 0; j < cargas.length; j++) {
+            if (hayOtroConLaMismaCarga(cargas, j)) {
+                continue;
+            }
+            cargas[j] += item.getPeso();
+            grupos.get(j).add(item);
+            asignar(items, indice + 1, cargas, grupos, busqueda);
+            grupos.get(j).remove(grupos.get(j).size() - 1);
+            cargas[j] -= item.getPeso();
+        }
+    }
+
+    /** Dos vehiculos con la misma carga son el mismo estado. Alcanza con el de menor indice. */
+    private static boolean hayOtroConLaMismaCarga(double[] cargas, int j) {
+        for (int i = 0; i < j; i++) {
+            if (cargas[i] == cargas[j]) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static final class Busqueda {
+        private final double promedio;
+        private double mejor = Double.POSITIVE_INFINITY;
+        private List<List<Item>> mejorGrupos = List.of();
+        private long explorados;
+        private long podados;
+
+        private Busqueda(double promedio) {
+            this.promedio = promedio;
+        }
     }
 }

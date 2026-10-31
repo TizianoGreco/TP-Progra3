@@ -17,7 +17,7 @@ Sobre el grafo del grupo: V = 10, E = 15, n = 8.
 | Mochila 0/1 | programación dinámica | OPT(i, w) = max(OPT(i−1, w), OPT(i−1, w−pesoᵢ) + valorᵢ) | O(n · W) | O(n · W) | tabla `dp[n+1][W+1]` |
 | Floyd-Warshall | programación dinámica | d⁽ᵏ⁾(i, j) = min(d⁽ᵏ⁻¹⁾(i, j), d⁽ᵏ⁻¹⁾(i, k) + d⁽ᵏ⁻¹⁾(k, j)) | O(V³) | O(V²) | matriz de adyacencia `double[][]` |
 | Backtracking rutas | backtracking | T(v) = O(v · T(v−1)) | O(V!) | O(V) | DFS recursivo + `boolean[]` visitados + camino |
-| Branch & Bound reparto | _pendiente (Persona 3)_ | | | | |
+| Branch & Bound reparto | ramificación y poda | T(n) = k · T(n−1) | O(kⁿ) | O(n + k) | DFS recursivo + `double[]` de cargas |
 
 ## Notas de justificación
 
@@ -40,6 +40,12 @@ Sobre el grafo del grupo: V = 10, E = 15, n = 8.
   nodos que todavía no están en el camino, y el camino puede llegar a largo V. Eso es
   V · (V−1) · … · 1. La poda no baja ese techo: corta ramas que ya no pueden servir. De
   Barracas a Quilmes, sin límite se visitan 30 nodos; con tope de 37 km, 23.
+
+- **Por qué la cota del reparto es optimista.** Vale `max(carga máxima actual, suma / k)`.
+  El vehículo más cargado no puede bajar de lo que ya lleva, y tampoco se puede dejar a
+  todos por debajo del promedio. Si esa cota ya no mejora el mejor reparto encontrado, la
+  rama se corta. Con 3 vehículos la cota inicial es 34/3 ≈ 11,33 kg y el óptimo es 12 kg;
+  de 217 nodos se podan 122.
 
 Las notas de cada algoritmo pendiente las agrega quien lo implementa; Persona 3 consolida el
 informe completo.

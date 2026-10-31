@@ -279,13 +279,45 @@ volver se desmarca el nodo: ese desmarcado es el retroceso.
 
 ---
 
+### GET /api/seleccion/repartir
+
+Reparte todos los paquetes entre k vehículos iguales y minimiza la carga del que queda
+más pesado. Los 8 paquetes suman 34 kg.
+
+**Parámetros:** `contenedores` (k, al menos 1)
+
+**Ejemplo:** `GET /api/seleccion/repartir?contenedores=3`
+
+**Respuesta:**
+```json
+{"porContenedor":{"contenedor1":[{"id":"P1","nombre":"Notebook","peso":6.0,"valor":60.0,"nodoId":"PAL"},{"id":"P2","nombre":"Monitor","peso":5.0,"valor":48.0,"nodoId":"CAB"},{"id":"P7","nombre":"Documentacion","peso":1.0,"valor":4.0,"nodoId":"DN"}],"contenedor2":[{"id":"P3","nombre":"Impresora","peso":5.0,"valor":47.0,"nodoId":"SI"},{"id":"P4","nombre":"Libros","peso":2.0,"valor":14.0,"nodoId":"AVE"},{"id":"P5","nombre":"Ropa","peso":3.0,"valor":18.0,"nodoId":"QUI"}],"contenedor3":[{"id":"P6","nombre":"Herramientas","peso":8.0,"valor":40.0,"nodoId":"MOR"},{"id":"P8","nombre":"Repuestos","peso":4.0,"valor":12.0,"nodoId":"DS"}]},"cargaMaxima":12.0,"cotaInicial":11.333333333333334,"nodosExplorados":217,"nodosPodados":122}
+```
+Con 3 vehículos el más cargado lleva **12 kg** (6+5+1 y 8+4). La cota inicial es
+34/3 ≈ 11,33 kg: no existe un reparto cuyo máximo baje de eso, y como los pesos son
+enteros el óptimo es 12. Con 4 vehículos el máximo es **9 kg** (cota 8,5). Con 2 es
+**17 kg**, y ahí la cota ya es la solución.
+
+La cota de un nodo es `max(carga máxima actual, suma / k)`. Es optimista: el resultado
+final no puede ser menor que lo que un vehículo ya lleva, ni menor que el promedio. Si
+esa cota no mejora el mejor reparto encontrado, la rama se poda. Con 3 vehículos se
+visitan 217 nodos y se podan 122.
+
+**Errores:** 400 si `contenedores` es menor que 1.
+
+**Complejidad:** O(kⁿ) en el peor caso. Cada paquete puede ir a cualquiera de los k
+vehículos. Espacio O(n + k).
+
+**Estructura usada:** DFS recursivo y un `double[]` con la carga de cada vehículo. Si
+dos vehículos pesan lo mismo, el paquete solo se prueba en el de menor índice.
+
+---
+
 ## Pendientes
 
-Las fichas de Prim, Kruskal, QuickSort, MergeSort y Greedy (Persona 2) y de
-Branch & Bound (Persona 3) se agregan acá a medida que cada
-algoritmo se implementa, con el mismo formato: descripción, parámetros, ejemplo real,
-errores, complejidad justificada y estructura de datos. Mientras tanto esos endpoints
-responden:
+Las fichas de Prim, Kruskal, QuickSort, MergeSort y Greedy (Persona 2) se agregan acá a
+medida que cada algoritmo se implementa, con el mismo formato: descripción, parámetros,
+ejemplo real, errores, complejidad justificada y estructura de datos. Mientras tanto esos
+endpoints responden:
 
 ```json
 {"estado":"PENDIENTE","detalle":"Todavia no esta implementado: Prim"}

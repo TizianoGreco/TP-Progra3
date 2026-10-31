@@ -193,7 +193,7 @@ el óptimo de la mochila 0/1 es {P2, P3} = **95 USD**.
 | Mochila 0/1 | programación dinámica | `GET /api/seleccion/dinamica?capacidad=10` | O(n · W) | 1 | ✅ |
 | Floyd-Warshall | programación dinámica | `GET /api/grafo/floyd` | O(V³) | (PD) | ✅ |
 | Backtracking | backtracking | `GET /api/grafo/rutas?origen=CD&destino=QUI&costoMaximo=37&saltosMaximos=5` | O(V!) peor caso | 1 | ✅ |
-| Branch & Bound | ramificación y poda | `GET /api/seleccion/repartir?contenedores=3` | O(kⁿ) peor caso | 1 | ⏳ |
+| Branch & Bound | ramificación y poda | `GET /api/seleccion/repartir?contenedores=3` | O(kⁿ) peor caso | 1 | ✅ |
 
 ✅ implementado, con tests y ficha · ⏳ en desarrollo: el endpoint responde
 `501 Not Implemented` con un mensaje claro.
