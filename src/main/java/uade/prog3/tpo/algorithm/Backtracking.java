@@ -3,6 +3,7 @@ package uade.prog3.tpo.algorithm;
 import org.springframework.stereotype.Component;
 import uade.prog3.tpo.service.Grafo;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,30 +38,91 @@ public class Backtracking {
                                  int ramasPodadas) { }
 
     /**
-     * Enumerar TODOS los caminos simples de origen a destino que no superen
+     * Enumerar todos los caminos simples de origen a destino que no superen
      * un costo maximo ni una cantidad maxima de saltos.
      *
-     * Requisitos:
-     *   - camino SIMPLE: no repetir vertices. Marcar y desmarcar el visitado
-     *     es literalmente el retroceso del backtracking
-     *   - podar en cuanto el costo parcial supere el maximo, sin esperar a
-     *     completar el camino
-     *   - devolver todas las rutas validas, no la primera
-     *
-     * Complejidad esperada: exponencial en el peor caso. Hay que poder
-     * justificar por que, y explicar cuanto ayuda la poda en la practica.
+     * Un salto es una ruta (una arista). CD -> DS -> QUI tiene 2 saltos.
      */
     public List<Ruta> rutasSimples(Grafo grafo, String origenId, String destinoId,
                                    double costoMaximo, int saltosMaximos) {
-        throw new PendienteDeImplementar("Backtracking de rutas simples");
+        return buscar(grafo, origenId, destinoId, costoMaximo, saltosMaximos).rutas();
     }
 
     /**
      * Misma busqueda, devolviendo ademas los nodos explorados con y sin poda.
-     * Es lo que usa el endpoint: esa comparacion es material de coloquio.
+     *
+     * DFS recursivo. Al entrar se marca el nodo y se agrega al camino; al
+     * volver se desmarca y se quita. Eso es el retroceso: el nodo queda libre
+     * para otra rama.
+     *
+     * Se poda antes de bajar: si la arista siguiente pasa el maximo de km o
+     * de saltos, esa rama no se explora. La busqueda sin poda recorre todos
+     * los caminos simples y descarta al final los que no cumplen.
+     *
+     * En el peor caso el arbol tiene un llamado por cada permutacion de
+     * nodos, O(V!). La poda no cambia ese techo; en la red del grupo baja
+     * los nodos visitados. Espacio O(V): el camino, el arreglo de visitados
+     * y la pila de llamadas.
      */
     public ResultadoRutas buscar(Grafo grafo, String origenId, String destinoId,
                                  double costoMaximo, int saltosMaximos) {
-        throw new PendienteDeImplementar("Backtracking de rutas simples");
+        if (costoMaximo < 0) {
+            throw new IllegalArgumentException(
+                    "El costo maximo no puede ser negativo: " + costoMaximo);
+        }
+        if (saltosMaximos < 1) {
+            throw new IllegalArgumentException(
+                    "La cantidad maxima de saltos debe ser al menos 1: " + saltosMaximos);
+        }
+        int origen = grafo.indiceDe(origenId);
+        int destino = grafo.indiceDe(destinoId);
+
+        Busqueda conPoda = new Busqueda();
+        explorar(grafo, origen, destino, 0, 0, costoMaximo, saltosMaximos, true,
+                new boolean[grafo.cantidadVertices()], new ArrayList<>(), conPoda);
+
+        Busqueda sinPoda = new Busqueda();
+        explorar(grafo, origen, destino, 0, 0, costoMaximo, saltosMaximos, false,
+                new boolean[grafo.cantidadVertices()], new ArrayList<>(), sinPoda);
+
+        return new ResultadoRutas(conPoda.rutas, conPoda.explorados, sinPoda.explorados, conPoda.podadas);
+    }
+
+    private void explorar(Grafo grafo, int actual, int destino, double costo, int saltos,
+                          double costoMaximo, int saltosMaximos, boolean podar,
+                          boolean[] visitado, List<String> camino, Busqueda busqueda) {
+        busqueda.explorados++;
+        visitado[actual] = true;
+        camino.add(grafo.idDe(actual));
+
+        if (actual == destino) {
+            if (costo <= costoMaximo && saltos <= saltosMaximos) {
+                busqueda.rutas.add(new Ruta(List.copyOf(camino), costo));
+            }
+        } else {
+            for (Grafo.Arista arista : grafo.vecinos(actual)) {
+                if (visitado[arista.destino()]) {
+                    continue;
+                }
+                double nuevoCosto = costo + arista.costo();
+                int nuevosSaltos = saltos + 1;
+                if (podar && (nuevoCosto > costoMaximo || nuevosSaltos > saltosMaximos)) {
+                    busqueda.podadas++;
+                    continue;
+                }
+                explorar(grafo, arista.destino(), destino, nuevoCosto, nuevosSaltos,
+                        costoMaximo, saltosMaximos, podar, visitado, camino, busqueda);
+            }
+        }
+
+        camino.remove(camino.size() - 1);
+        visitado[actual] = false;
+    }
+
+    /** Contadores de una corrida. La lista de rutas se arma en orden de descubrimiento. */
+    private static final class Busqueda {
+        private final List<Ruta> rutas = new ArrayList<>();
+        private int explorados;
+        private int podadas;
     }
 }

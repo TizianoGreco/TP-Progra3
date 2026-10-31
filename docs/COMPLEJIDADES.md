@@ -16,7 +16,7 @@ Sobre el grafo del grupo: V = 10, E = 15, n = 8.
 | Greedy mochila | _pendiente (Persona 2)_ | | | | |
 | Mochila 0/1 | programación dinámica | OPT(i, w) = max(OPT(i−1, w), OPT(i−1, w−pesoᵢ) + valorᵢ) | O(n · W) | O(n · W) | tabla `dp[n+1][W+1]` |
 | Floyd-Warshall | programación dinámica | d⁽ᵏ⁾(i, j) = min(d⁽ᵏ⁻¹⁾(i, j), d⁽ᵏ⁻¹⁾(i, k) + d⁽ᵏ⁻¹⁾(k, j)) | O(V³) | O(V²) | matriz de adyacencia `double[][]` |
-| Backtracking rutas | _pendiente (Persona 3)_ | | | | |
+| Backtracking rutas | backtracking | T(v) = O(v · T(v−1)) | O(V!) | O(V) | DFS recursivo + `boolean[]` visitados + camino |
 | Branch & Bound reparto | _pendiente (Persona 3)_ | | | | |
 
 ## Notas de justificación
@@ -35,6 +35,11 @@ Sobre el grafo del grupo: V = 10, E = 15, n = 8.
   cada uno se revisan los V×V pares. Cada revisión es un mínimo en O(1). La matriz se
   reutiliza, así que el espacio queda en O(V²). En esta red son 10³ = 1000 operaciones;
   correr Dijkstra desde cada nodo relaja 40 aristas.
+
+- **Por qué el backtracking es O(V!).** En cada paso se puede seguir por cualquiera de los
+  nodos que todavía no están en el camino, y el camino puede llegar a largo V. Eso es
+  V · (V−1) · … · 1. La poda no baja ese techo: corta ramas que ya no pueden servir. De
+  Barracas a Quilmes, sin límite se visitan 30 nodos; con tope de 37 km, 23.
 
 Las notas de cada algoritmo pendiente las agrega quien lo implementa; Persona 3 consolida el
 informe completo.

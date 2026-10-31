@@ -239,10 +239,50 @@ de camino mínimo.
 
 ---
 
+### GET /api/grafo/rutas
+
+Todas las rutas simples entre dos nodos que no pasen de una distancia en km ni de una
+cantidad de saltos. Un salto es una ruta. No se repite un nodo. El límite es inclusivo:
+37 km incluye la ruta de 37.
+
+**Parámetros:** `origen`, `destino`, `costoMaximo` (km, default 1000), `saltosMaximos`
+(default 10)
+
+**Ejemplo:** `GET /api/grafo/rutas?origen=CD&destino=QUI&costoMaximo=37&saltosMaximos=5`
+
+**Respuesta:**
+```json
+{"rutas":[{"vertices":["CD","DS","AVE","QUI"],"costoTotal":27.0},{"vertices":["CD","DS","QUI"],"costoTotal":29.0},{"vertices":["CD","CAB","DS","AVE","QUI"],"costoTotal":35.0},{"vertices":["CD","CAB","DS","QUI"],"costoTotal":37.0}],"nodosExploradosConPoda":23,"nodosExploradosSinPoda":30,"ramasPodadas":4}
+```
+Sin límite hay 8 rutas (27, 29, 35, 37, 43, 45, 58 y 60 km). Con 30 km quedan 2. Con
+2 saltos queda una sola: `CD → DS → QUI`, 29 km. De QUI a CD la lista va vacía.
+
+Nodos explorados (llamadas del DFS) con poda y sin poda:
+
+| Restricción | Rutas | Con poda | Sin poda | Ramas podadas |
+|---|---:|---:|---:|---:|
+| sin límite (1000 km, 10 saltos) | 8 | 30 | 30 | 0 |
+| ≤ 37 km y 10 saltos | 4 | 23 | 30 | 4 |
+| ≤ 30 km y 10 saltos | 2 | 18 | 30 | 8 |
+| 1000 km y ≤ 2 saltos | 1 | 15 | 30 | 8 |
+
+La poda corta apenas el tramo siguiente se pasa del máximo, sin armar el resto del camino.
+
+**Errores:** 400 si `costoMaximo` es negativo o `saltosMaximos` es menor que 1, o si el
+nodo no existe.
+
+**Complejidad:** O(V!) en el peor caso. Desde cada nodo se puede seguir por cualquiera de
+los que no están en el camino, y el camino puede tener largo V. Espacio O(V).
+
+**Estructura usada:** DFS recursivo, `boolean[]` de visitados y la lista del camino. Al
+volver se desmarca el nodo: ese desmarcado es el retroceso.
+
+---
+
 ## Pendientes
 
 Las fichas de Prim, Kruskal, QuickSort, MergeSort y Greedy (Persona 2) y de
-Backtracking y Branch & Bound (Persona 3) se agregan acá a medida que cada
+Branch & Bound (Persona 3) se agregan acá a medida que cada
 algoritmo se implementa, con el mismo formato: descripción, parámetros, ejemplo real,
 errores, complejidad justificada y estructura de datos. Mientras tanto esos endpoints
 responden:
