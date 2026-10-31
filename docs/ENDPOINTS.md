@@ -186,10 +186,63 @@ capacidad, no la cantidad de paquetes.
 
 ---
 
+### GET /api/grafo/floyd
+
+Costo mínimo en km entre todos los pares de nodos. Sirve para armar la tabla de distancias
+de la red de una sola vez, en lugar de pedir un camino por vez.
+
+**Parámetros:** ninguno
+
+**Ejemplo:** `GET /api/grafo/floyd`
+
+**Respuesta:**
+```json
+{"CD->CD":0.0,"CD->DN":17.0,"CD->DS":10.0,"CD->DO":18.0,"CD->PAL":9.0,"CD->CAB":7.0,"CD->SI":29.0,"CD->AVE":15.0,"CD->QUI":27.0,"CD->MOR":23.0,"DN->DN":0.0,"DN->SI":12.0,"DS->DS":0.0,"DS->AVE":5.0,"DS->QUI":17.0,"DO->DS":23.0,"DO->DO":0.0,"DO->CAB":12.0,"DO->AVE":28.0,"DO->QUI":40.0,"DO->MOR":5.0,"PAL->DN":8.0,"PAL->DS":17.0,"PAL->PAL":0.0,"PAL->CAB":6.0,"PAL->SI":20.0,"PAL->AVE":22.0,"PAL->QUI":34.0,"PAL->MOR":23.0,"CAB->DS":11.0,"CAB->CAB":0.0,"CAB->AVE":16.0,"CAB->QUI":28.0,"CAB->MOR":17.0,"SI->SI":0.0,"AVE->AVE":0.0,"AVE->QUI":12.0,"QUI->QUI":0.0,"MOR->MOR":0.0}
+```
+Solo entran los pares alcanzables. `CD->DN` queda en 17 km (por Palermo) y no en los 19
+del tramo directo. `CD->QUI` = 27, `PAL->QUI` = 34, `DO->QUI` = 40. `QUI->CD` no aparece:
+desde Quilmes no hay vuelta. La diagonal vale 0.
+
+**Errores:** 422 si hay un ciclo de costo negativo (algún nodo a distancia negativa de sí
+mismo). Un peso negativo suelto, sin ciclo, no es un error: el algoritmo igual encuentra
+el mínimo.
+
+**Complejidad:** O(V³). Para cada posible nodo intermedio se revisan todos los pares, y
+cada revisión es un mínimo en O(1). Espacio O(V²).
+
+**Estructura usada:** matriz `double[][]` copiada de la adyacencia. El bucle del
+intermedio `k` va por fuera de `i` y `j`.
+
+---
+
+### GET /api/grafo/floyd/comparacion
+
+Corre Floyd-Warshall y, aparte, Dijkstra desde cada nodo. Los costos tienen que coincidir.
+La diferencia es cuánto trabajo hace cada uno.
+
+**Parámetros:** ninguno
+
+**Ejemplo:** `GET /api/grafo/floyd/comparacion`
+
+**Respuesta:**
+```json
+{"vertices":10,"operacionesFloyd":1000,"nodosExpandidosDijkstraV":39,"relajacionesDijkstraV":40,"costosCoinciden":true}
+```
+Floyd hace V³ = 10³ = 1000 operaciones. Dijkstra, una vez por nodo, relaja 40 aristas y
+expande 39 nodos. En esta red rala Dijkstra × V trabaja menos; Floyd igual llena toda la
+tabla.
+
+**Complejidad:** O(V³) por Floyd, más O(V · (V + E) log V) por las V corridas de Dijkstra.
+
+**Estructura usada:** la matriz de Floyd y, para Dijkstra, el mismo heap que el endpoint
+de camino mínimo.
+
+---
+
 ## Pendientes
 
 Las fichas de Prim, Kruskal, QuickSort, MergeSort y Greedy (Persona 2) y de
-Floyd-Warshall, Backtracking y Branch & Bound (Persona 3) se agregan acá a medida que cada
+Backtracking y Branch & Bound (Persona 3) se agregan acá a medida que cada
 algoritmo se implementa, con el mismo formato: descripción, parámetros, ejemplo real,
 errores, complejidad justificada y estructura de datos. Mientras tanto esos endpoints
 responden:

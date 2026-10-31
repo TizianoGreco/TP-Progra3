@@ -15,7 +15,7 @@ Sobre el grafo del grupo: V = 10, E = 15, n = 8.
 | MergeSort | _pendiente (Persona 2)_ | | | | |
 | Greedy mochila | _pendiente (Persona 2)_ | | | | |
 | Mochila 0/1 | programación dinámica | OPT(i, w) = max(OPT(i−1, w), OPT(i−1, w−pesoᵢ) + valorᵢ) | O(n · W) | O(n · W) | tabla `dp[n+1][W+1]` |
-| Floyd-Warshall | _pendiente (Persona 3)_ | | | | |
+| Floyd-Warshall | programación dinámica | d⁽ᵏ⁾(i, j) = min(d⁽ᵏ⁻¹⁾(i, j), d⁽ᵏ⁻¹⁾(i, k) + d⁽ᵏ⁻¹⁾(k, j)) | O(V³) | O(V²) | matriz de adyacencia `double[][]` |
 | Backtracking rutas | _pendiente (Persona 3)_ | | | | |
 | Branch & Bound reparto | _pendiente (Persona 3)_ | | | | |
 
@@ -30,6 +30,11 @@ Sobre el grafo del grupo: V = 10, E = 15, n = 8.
   ítem y por cada kilo de capacidad, y cada celda se resuelve en O(1) leyendo la fila
   anterior. W es el valor de la capacidad, no la cantidad de ítems: si la capacidad pasa
   de 10 kg a 10 000 kg la tabla crece mil veces aunque sigan siendo 8 paquetes.
+
+- **Por qué Floyd-Warshall es O(V³).** El vértice intermedio k recorre los V nodos, y para
+  cada uno se revisan los V×V pares. Cada revisión es un mínimo en O(1). La matriz se
+  reutiliza, así que el espacio queda en O(V²). En esta red son 10³ = 1000 operaciones;
+  correr Dijkstra desde cada nodo relaja 40 aristas.
 
 Las notas de cada algoritmo pendiente las agrega quien lo implementa; Persona 3 consolida el
 informe completo.
