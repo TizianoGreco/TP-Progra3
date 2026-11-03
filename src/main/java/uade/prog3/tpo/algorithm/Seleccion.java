@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import uade.prog3.tpo.model.Item;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -25,20 +26,45 @@ public class Seleccion {
     /** Resultado de una seleccion de items bajo restriccion de capacidad. */
     public record Resultado(List<Item> elegidos, double valorTotal, double pesoTotal, String tecnica) { }
 
+    /** Stateless: se instancia aca para no cambiar el constructor que usan los tests. */
+    private final Ordenamiento ordenamiento = new Ordenamiento();
+
     /**
-     * GREEDY (Persona 2): seleccionar items maximizando el valor total sin
-     * superar la capacidad, ordenando por ratio valor/peso descendente y
-     * tomando mientras entren.
+     * GREEDY (Persona 2) por densidad de valor.
      *
-     * Requisitos:
-     *   - declarar EXPLICITAMENTE cual es la funcion objetivo
-     *   - usar el ratio valor/peso como criterio, no el valor a secas
-     *   - documentar la complejidad, que esta dominada por el ordenamiento
+     * Funcion objetivo: maximizar la suma de valor de los items elegidos,
+     * sujeto a que la suma de pesos no supere la capacidad.
      *
-     * Complejidad esperada: O(n log n).
+     * Criterio: ordenar por ratio valor/peso descendente y tomar cada item
+     * mientras entre en la capacidad restante. Se usa el ratio y no el valor
+     * a secas porque el recurso escaso es el peso: un item de mucho valor y
+     * mucho peso puede desplazar a varios que juntos valen mas.
+     *
+     * Complejidad: O(n log n), dominada por el MergeSort propio; el recorrido
+     * posterior es O(n). Espacio: O(n).
+     *
+     * NO es optimo para mochila 0/1: con capacidad 10 toma P1 (ratio 10) y el
+     * hueco de 4 kg que deja ya no admite a P2 ni a P3, que juntos valen 95.
+     * Si es optimo para la version fraccional (se puede cargar parte de un item).
      */
     public Resultado greedy(List<Item> items, double capacidad) {
-        throw new PendienteDeImplementar("Seleccion greedy");
+        if (capacidad < 0) {
+            throw new IllegalArgumentException("La capacidad no puede ser negativa");
+        }
+        List<Item> porRatioDesc = ordenamiento.mergeSort(items,
+                Comparator.comparingDouble(Item::ratioValorPeso).reversed());
+
+        List<Item> elegidos = new ArrayList<>();
+        double peso = 0.0;
+        double valor = 0.0;
+        for (Item it : porRatioDesc) {
+            if (peso + it.getPeso() <= capacidad) {
+                elegidos.add(it);
+                peso += it.getPeso();
+                valor += it.getValor();
+            }
+        }
+        return new Resultado(elegidos, valor, peso, "greedy");
     }
 
     /**
