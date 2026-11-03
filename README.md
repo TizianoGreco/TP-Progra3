@@ -47,6 +47,7 @@ de grafos, ordenamiento, selección y optimización de la materia.
 9. [Documentación complementaria](#9-documentación-complementaria)
 10. [Organización del trabajo](#10-organización-del-trabajo)
 11. [Uso de inteligencia artificial](#11-uso-de-inteligencia-artificial)
+12. [Entrega final](#12-entrega-final)
 
 ---
 
@@ -371,6 +372,28 @@ Conforme a la sección 7 de la consigna, se declara el uso de asistentes de IA:
 
 El Segundo Parcial, de codificación en vivo y sin asistentes, es la instancia que verifica
 la comprensión individual de cada algoritmo.
+
+## 12. Entrega final
+
+La versión que se corrige es la que marca el tag `entrega-final` (hito 12). El tag apunta
+al merge de este cierre en `main`; lo posterior no se evalúa.
+
+Checklist de admisibilidad (consigna 4.2 y 6):
+
+- [x] Al menos 9 de los 12 hitos, incluidos el 3, 4, 5 y 12.
+- [x] Compila y `./mvnw test` pasa sin errores (58 tests).
+- [x] Ninguna credencial en el código, en `application.properties` ni en el historial.
+- [x] El README declara dominio, qué es un nodo, qué es una arista y la unidad del costo.
+- [x] Cada algoritmo declarado tiene su ficha en [docs/ENDPOINTS.md](docs/ENDPOINTS.md).
+- [x] El historial de commits muestra participación de todos los integrantes.
+- [x] README con integrantes (nombre completo y usuario de GitHub) y sección «Uso de IA».
+
+Para verificar la versión entregada:
+
+```bash
+git checkout entrega-final
+./mvnw test
+```
 
 ---
 
