@@ -283,6 +283,17 @@ contra los algoritmos ("Ganale a Dijkstra" y "Cargá el camión", Greedy vs. Pro
 Dinámica). El mapa tiene vista 2D y 3D (Three.js, se carga desde CDN; sin internet queda la
 vista 2D). La página no implementa ningún algoritmo: dibuja lo que devuelve la API.
 
+**Demo online:** https://tp-progra3-red-logistica-chi.vercel.app. Vercel no corre Java ni Neo4j, así
+que la demo es la misma página con las respuestas reales del backend guardadas en archivos: todas
+las consultas que la página puede hacer (cada par de nodos, cada capacidad de 1 a 40 kg y cada
+tope de 0 a 200 km). Las genera `scripts/generar_demo.py` con la aplicación levantada, y la página
+pasa sola a ese modo cuando no encuentra la API. Para regenerarla y publicarla:
+
+```bash
+python3 scripts/generar_demo.py http://localhost:8080 demo
+vercel deploy --prod --cwd demo
+```
+
 La carga inicial se omite si la base ya tiene datos. Para recargar el dominio, ejecutar
 `MATCH (n) DETACH DELETE n` en Neo4j y reiniciar la aplicación. Las requests de ejemplo
 de todos los endpoints están en [docs/api.http](docs/api.http).
