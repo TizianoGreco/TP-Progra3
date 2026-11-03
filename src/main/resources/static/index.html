@@ -15,7 +15,7 @@
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&family=Abril+Fatface&display=swap" rel="stylesheet">
 <style>
   :root {
     color-scheme: dark;
@@ -263,6 +263,7 @@
   dialog::backdrop { background: rgba(5,7,10,.72); backdrop-filter: blur(3px); }
   .dlg-cab { display: flex; justify-content: space-between; align-items: start; padding: 20px 22px 6px; }
   .dlg-cab .titulo { margin: 6px 0 0; }
+  .dlg-cab { background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 56%22%3E%3Cg transform=%22translate(0 0)%22%3E %3Cpath d=%22M58 40 C44 42 26 40 18 30 C10 20 18 8 30 10 C40 12 40 25 31 25 C25 25 25 18 30 18%22 fill=%22none%22 stroke=%22#1f2433%22 stroke-width=%227%22 stroke-linecap=%22round%22/%3E %3Cpath d=%22M58 40 C44 42 26 40 18 30 C10 20 18 8 30 10 C40 12 40 25 31 25 C25 25 25 18 30 18%22 fill=%22none%22 stroke=%22#e63946%22 stroke-width=%224%22 stroke-linecap=%22round%22/%3E %3Cpath d=%22M56 38 C44 40 28 38 20 29%22 fill=%22none%22 stroke=%22#fff%22 stroke-width=%221%22 stroke-linecap=%22round%22 opacity=%22.8%22/%3E %3Cpath d=%22M58 40 C52 30 44 26 36 30 C42 31 48 36 52 41 Z%22 fill=%22#2a9d8f%22 stroke=%22#1f2433%22 stroke-width=%221.6%22/%3E %3Cpath d=%22M58 40 C54 46 44 50 36 48 C42 46 48 44 52 40 Z%22 fill=%22#f6c445%22 stroke=%22#1f2433%22 stroke-width=%221.6%22/%3E %3C/g%3E%3Cg transform=%22translate(120 0) scale(-1 1)%22%3E %3Cpath d=%22M58 40 C44 42 26 40 18 30 C10 20 18 8 30 10 C40 12 40 25 31 25 C25 25 25 18 30 18%22 fill=%22none%22 stroke=%22#1f2433%22 stroke-width=%227%22 stroke-linecap=%22round%22/%3E %3Cpath d=%22M58 40 C44 42 26 40 18 30 C10 20 18 8 30 10 C40 12 40 25 31 25 C25 25 25 18 30 18%22 fill=%22none%22 stroke=%22#e63946%22 stroke-width=%224%22 stroke-linecap=%22round%22/%3E %3Cpath d=%22M56 38 C44 40 28 38 20 29%22 fill=%22none%22 stroke=%22#fff%22 stroke-width=%221%22 stroke-linecap=%22round%22 opacity=%22.8%22/%3E %3Cpath d=%22M58 40 C52 30 44 26 36 30 C42 31 48 36 52 41 Z%22 fill=%22#2a9d8f%22 stroke=%22#1f2433%22 stroke-width=%221.6%22/%3E %3Cpath d=%22M58 40 C54 46 44 50 36 48 C42 46 48 44 52 40 Z%22 fill=%22#f6c445%22 stroke=%22#1f2433%22 stroke-width=%221.6%22/%3E %3C/g%3E%3Ccircle cx=%2260%22 cy=%2240%22 r=%226%22 fill=%22#3a86ff%22 stroke=%22#1f2433%22 stroke-width=%221.8%22/%3E%3Ccircle cx=%2260%22 cy=%2240%22 r=%222.2%22 fill=%22#f6c445%22/%3E%3C/svg%3E") no-repeat right 56px top 16px / 70px auto; }
   .cerrar { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 22px; line-height: 1; padding: 4px; }
   .cerrar:hover { color: var(--ink); }
   .dlg-cuerpo { padding: 8px 22px 22px; }
@@ -285,7 +286,8 @@
   .capa-etiquetas { position: absolute; inset: 0; pointer-events: none; }
   .lbl3d { position: relative; text-align: center; pointer-events: none; }
   .lbl3d b { display: inline-block; font: 700 13px/1 var(--display); letter-spacing: .08em; color: #1f2433;
-             background: #fffdf6; border: 2px solid #1f2433; border-radius: 6px; padding: 4px 8px 3px; box-shadow: 0 3px 0 #1f2433; }
+             background: #fffdf6; border: 2px solid #1f2433; border-radius: 6px; padding: 5px 9px 4px;
+             box-shadow: 0 3px 0 #1f2433, inset 0 0 0 2px #fffdf6, inset 0 0 0 3.5px #e63946; }
   .lbl3d span { display: block; margin-top: 6px; font: 600 11px var(--body); color: #fff; letter-spacing: .02em;
                 text-shadow: 0 0 3px #1f2433, 0 1px 2px #1f2433, 1px 0 2px #1f2433, -1px 0 2px #1f2433; }
   .lbl3d.foco b { background: var(--tono); }
@@ -297,9 +299,13 @@
   .km3d { font: 700 10.5px var(--mono); color: #1f2433; background: rgba(255,253,246,.92); border: 1.5px solid #1f2433;
           padding: 1px 5px; border-radius: 10px; }
   .km3d.on { background: var(--tono); }
-  .hito3d { font: 700 10.5px var(--display); letter-spacing: .12em; text-transform: uppercase; color: #1f2433; white-space: nowrap;
-            background: #ffd166; border: 1.5px solid #1f2433; border-radius: 4px; padding: 2px 6px 1px; pointer-events: none; }
+  /* carteles de los lugares: como los carteles fileteados, fondo negro, letra crema con sombra roja y doble filete */
+  .hito3d { font: 400 13px/1 "Abril Fatface", Georgia, serif; letter-spacing: .04em; color: #f6e7b9; white-space: nowrap;
+            background: #1f2433; border: 2px solid #f6c445; border-radius: 7px; padding: 4px 9px 3px; pointer-events: none; font-size: 12px;
+            text-shadow: 1.5px 1.5px 0 #e63946; box-shadow: 0 0 0 2px #1f2433, inset 0 0 0 2px #1f2433, inset 0 0 0 3px #2a9d8f, 0 3px 0 2px #1f2433; }
   .hito3d.agua { background: none; border: 0; color: #fff; font-style: italic; text-shadow: 0 1px 0 #2a7fb3, 0 0 5px rgba(20,90,140,.7); }
+  .capa-etiquetas .hito3d { opacity: 0; }
+  .capa-etiquetas.cerca .hito3d, .capa-etiquetas .hito3d.agua { opacity: 1; }
   .rio3d { font: italic 700 14px var(--body); color: #fff; letter-spacing: .3em; text-transform: uppercase; white-space: nowrap;
            text-shadow: 0 1px 0 #2a7fb3, 0 0 6px rgba(20,90,140,.6); }
   .hud.der { right: 16px; top: 14px; display: flex; gap: 6px; pointer-events: auto; }
@@ -322,7 +328,11 @@
     --tinta: #1f2433; --sombra: 0 3px 0 #1f2433;
     color: var(--ink);
   }
-  .bar { background: #fffdf8; border-bottom: 2px solid var(--tinta); }
+  .bar { background: #fffdf8; border-bottom: 2px solid var(--tinta); position: relative; z-index: 5;
+         box-shadow: 0 3px 0 #f6c445, 0 5px 0 var(--tinta); }
+  .marca b { font-family: "Abril Fatface", Georgia, serif; font-weight: 400; letter-spacing: .03em; text-transform: none; font-size: 21px;
+             color: #1f2433; text-shadow: 1.5px 1.5px 0 #f6c445; }
+  .filete { width: 76px; height: 36px; flex: none; background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 56%22%3E%3Cg transform=%22translate(0 0)%22%3E %3Cpath d=%22M58 40 C44 42 26 40 18 30 C10 20 18 8 30 10 C40 12 40 25 31 25 C25 25 25 18 30 18%22 fill=%22none%22 stroke=%22#1f2433%22 stroke-width=%227%22 stroke-linecap=%22round%22/%3E %3Cpath d=%22M58 40 C44 42 26 40 18 30 C10 20 18 8 30 10 C40 12 40 25 31 25 C25 25 25 18 30 18%22 fill=%22none%22 stroke=%22#e63946%22 stroke-width=%224%22 stroke-linecap=%22round%22/%3E %3Cpath d=%22M56 38 C44 40 28 38 20 29%22 fill=%22none%22 stroke=%22#fff%22 stroke-width=%221%22 stroke-linecap=%22round%22 opacity=%22.8%22/%3E %3Cpath d=%22M58 40 C52 30 44 26 36 30 C42 31 48 36 52 41 Z%22 fill=%22#2a9d8f%22 stroke=%22#1f2433%22 stroke-width=%221.6%22/%3E %3Cpath d=%22M58 40 C54 46 44 50 36 48 C42 46 48 44 52 40 Z%22 fill=%22#f6c445%22 stroke=%22#1f2433%22 stroke-width=%221.6%22/%3E %3C/g%3E%3Cg transform=%22translate(120 0) scale(-1 1)%22%3E %3Cpath d=%22M58 40 C44 42 26 40 18 30 C10 20 18 8 30 10 C40 12 40 25 31 25 C25 25 25 18 30 18%22 fill=%22none%22 stroke=%22#1f2433%22 stroke-width=%227%22 stroke-linecap=%22round%22/%3E %3Cpath d=%22M58 40 C44 42 26 40 18 30 C10 20 18 8 30 10 C40 12 40 25 31 25 C25 25 25 18 30 18%22 fill=%22none%22 stroke=%22#e63946%22 stroke-width=%224%22 stroke-linecap=%22round%22/%3E %3Cpath d=%22M56 38 C44 40 28 38 20 29%22 fill=%22none%22 stroke=%22#fff%22 stroke-width=%221%22 stroke-linecap=%22round%22 opacity=%22.8%22/%3E %3Cpath d=%22M58 40 C52 30 44 26 36 30 C42 31 48 36 52 41 Z%22 fill=%22#2a9d8f%22 stroke=%22#1f2433%22 stroke-width=%221.6%22/%3E %3Cpath d=%22M58 40 C54 46 44 50 36 48 C42 46 48 44 52 40 Z%22 fill=%22#f6c445%22 stroke=%22#1f2433%22 stroke-width=%221.6%22/%3E %3C/g%3E%3Ccircle cx=%2260%22 cy=%2240%22 r=%226%22 fill=%22#3a86ff%22 stroke=%22#1f2433%22 stroke-width=%221.8%22/%3E%3Ccircle cx=%2260%22 cy=%2240%22 r=%222.2%22 fill=%22#f6c445%22/%3E%3C/svg%3E") no-repeat center / contain; }
   .marca svg rect { fill: #fff3d6; stroke: #1f2433; stroke-width: 2; }
   .modos { background: #f3eee3; border: 2px solid var(--tinta); border-radius: 10px; padding: 3px; gap: 3px; }
   .modos button { color: var(--muted); border-radius: 7px; border: 2px solid transparent; }
@@ -333,9 +343,14 @@
   .equipo-btn { background: #fff; color: var(--ink); border: 2px solid var(--tinta); border-radius: 8px; box-shadow: var(--sombra); }
   .equipo-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 0 var(--tinta); color: var(--ink); border-color: var(--tinta); }
 
+  /* marco fileteado del panel: doble filete rojo y verde que queda fijo mientras se scrollea */
+  .panel { box-shadow: inset 7px 0 0 #fbf8f1, inset 9px 0 0 #e63946, inset 11px 0 0 #fbf8f1, inset 13px 0 0 #2a9d8f,
+                       inset -7px 0 0 #fbf8f1, inset -9px 0 0 #e63946, inset -11px 0 0 #fbf8f1, inset -13px 0 0 #2a9d8f; }
+  .modo > .bloque:first-child { background: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 120 56%22%3E%3Cg transform=%22translate(0 0)%22%3E %3Cpath d=%22M58 40 C44 42 26 40 18 30 C10 20 18 8 30 10 C40 12 40 25 31 25 C25 25 25 18 30 18%22 fill=%22none%22 stroke=%22#1f2433%22 stroke-width=%227%22 stroke-linecap=%22round%22/%3E %3Cpath d=%22M58 40 C44 42 26 40 18 30 C10 20 18 8 30 10 C40 12 40 25 31 25 C25 25 25 18 30 18%22 fill=%22none%22 stroke=%22#e63946%22 stroke-width=%224%22 stroke-linecap=%22round%22/%3E %3Cpath d=%22M56 38 C44 40 28 38 20 29%22 fill=%22none%22 stroke=%22#fff%22 stroke-width=%221%22 stroke-linecap=%22round%22 opacity=%22.8%22/%3E %3Cpath d=%22M58 40 C52 30 44 26 36 30 C42 31 48 36 52 41 Z%22 fill=%22#2a9d8f%22 stroke=%22#1f2433%22 stroke-width=%221.6%22/%3E %3Cpath d=%22M58 40 C54 46 44 50 36 48 C42 46 48 44 52 40 Z%22 fill=%22#f6c445%22 stroke=%22#1f2433%22 stroke-width=%221.6%22/%3E %3C/g%3E%3Cg transform=%22translate(120 0) scale(-1 1)%22%3E %3Cpath d=%22M58 40 C44 42 26 40 18 30 C10 20 18 8 30 10 C40 12 40 25 31 25 C25 25 25 18 30 18%22 fill=%22none%22 stroke=%22#1f2433%22 stroke-width=%227%22 stroke-linecap=%22round%22/%3E %3Cpath d=%22M58 40 C44 42 26 40 18 30 C10 20 18 8 30 10 C40 12 40 25 31 25 C25 25 25 18 30 18%22 fill=%22none%22 stroke=%22#e63946%22 stroke-width=%224%22 stroke-linecap=%22round%22/%3E %3Cpath d=%22M56 38 C44 40 28 38 20 29%22 fill=%22none%22 stroke=%22#fff%22 stroke-width=%221%22 stroke-linecap=%22round%22 opacity=%22.8%22/%3E %3Cpath d=%22M58 40 C52 30 44 26 36 30 C42 31 48 36 52 41 Z%22 fill=%22#2a9d8f%22 stroke=%22#1f2433%22 stroke-width=%221.6%22/%3E %3Cpath d=%22M58 40 C54 46 44 50 36 48 C42 46 48 44 52 40 Z%22 fill=%22#f6c445%22 stroke=%22#1f2433%22 stroke-width=%221.6%22/%3E %3C/g%3E%3Ccircle cx=%2260%22 cy=%2240%22 r=%226%22 fill=%22#3a86ff%22 stroke=%22#1f2433%22 stroke-width=%221.8%22/%3E%3Ccircle cx=%2260%22 cy=%2240%22 r=%222.2%22 fill=%22#f6c445%22/%3E%3C/svg%3E") no-repeat right 22px top 14px / 84px auto; padding-right: 116px; }
   .panel { background: #fbf8f1; border-left: 2px solid var(--tinta);
            background-image: radial-gradient(#e9e3d6 1px, transparent 1px); background-size: 14px 14px; }
-  .bloque { border-bottom: 2px dashed #e1dacb; }
+  .bloque { border-bottom: 2px dashed #e1dacb; padding-left: 28px; padding-right: 28px; }
+  .pie { padding-left: 28px; padding-right: 28px; }
   .titulo { color: var(--ink); }
   .k { color: var(--muted); }
   .sub { color: #4f566a; }
@@ -439,6 +454,9 @@
     .km3d, .lbl3d span, .hito3d { display: none; }  /* en el celular solo los ids: si no, se tapan */
     .lbl3d b { font-size: 11px; padding: 3px 6px 2px; }
     .equipo-btn { display: none; }
+    .filete { display: none; }
+    .modo > .bloque:first-child { padding-right: 16px; background: none; }
+    .bloque, .pie { padding-left: 22px; padding-right: 22px; }
   }
 </style>
 </head>
@@ -452,6 +470,7 @@
       <circle cx="21" cy="19" r="2.6" fill="#43c58a"/><circle cx="26" cy="9" r="2.6" fill="#ff5f57"/>
     </svg>
     <div><b>Red Logística AMBA</b><span>TPO Programación III · UADE</span></div>
+    <span class="filete" aria-hidden="true"></span>
   </div>
   <nav class="modos" aria-label="Modos">
     <button data-modo="mision" class="on"><kbd>1</kbd>Misión</button>
@@ -1211,7 +1230,7 @@ $('reintentar').addEventListener('click', () => location.reload());
   dibujar();
   $('cargando').classList.add('fuera');
   setTimeout(() => { $('cargando').hidden = true; }, 350);  // sale del todo, aunque la transicion no corra
-  $('hud-meta').textContent = `${red.nodos.length} nodos · ${red.rutas.length} rutas · km por tramo`;
+  $('hud-meta').textContent = `${red.nodos.length} nodos · ${red.rutas.length} rutas · acercá para ver los lugares`;
   const ids = red.nodos.map(n => n.id);
   for (const [sel, def] of [['l-origen', 'CD'], ['l-destino', 'QUI']]) {
     const s = $(sel);
@@ -1234,8 +1253,9 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 
-// Mismas coordenadas que el mapa 2D, llevadas al plano XZ (1 unidad = 12 px).
-const ESC = 12, CX = 340, CZ = 290;
+// Mismas coordenadas que el mapa 2D, llevadas al plano XZ (1 unidad = 8.5 px): el 3D va mas estirado
+// que el 2D para que entren los lugares y los colectivos sin pisarse.
+const ESC = 8.5, CX = 340, CZ = 290;
 const a3 = ([x, y]) => new THREE.Vector3((x - CX) / ESC, 0, (y - CZ) / ESC);
 const CIELO = '#a8d8ee', TINTA = '#1f2433', PINTURA = '#f6f2e6';
 const LADO = { amber: .42, coral: -.42, teal: 0 };  // carril de cada camion, para que no se pisen
@@ -1320,8 +1340,10 @@ const COSTA = (() => {
 })();
 // Lugares del AMBA en coordenadas del mapa 2D.
 const RIACHUELO = [[650, 286], [585, 318], [530, 352], [470, 372], [410, 384], [350, 398], [290, 410], [220, 425], [150, 440], [80, 458], [-80, 486]];
-const LAGUNA = { c: [150, 95], r: 46 };
-const OBELISCO = [432, 216], CAMINITO = [532, 320];
+const LAGUNA = { c: [80, 55], r: 46 };
+// Ubicaciones aproximadas: se respeta la zona de cada lugar, corridas lo justo para que no se pisen con la red.
+const OBELISCO = [432, 216], CAMINITO = [530, 324], TRANSBORDADOR = [618, 300];
+const BOMBONERA = [560, 290], MONUMENTAL = [205, 120], PLANETARIO = [288, 190], CASA_ROSADA = [496, 264], PUENTE_MUJER = [402, 172];
 const BARCOS = [[560, 110], [640, 205], [470, 50], [700, 300]];
 TEX.bandera = () => lienzo(128, 84, (x, w, h) => {
   x.fillStyle = '#74acdf'; x.fillRect(0, 0, w, h);
@@ -1340,6 +1362,22 @@ function esTierra(xs, ys, margen = 0) {
   return false;
 }
 
+// Rizo de fileteado porteno: espiral con contorno negro y una linea de luz, como en los carteles pintados.
+function fileteRizo(x, cx, cy, sentido, color) {
+  const espiral = () => {
+    x.beginPath();
+    for (let i = 0; i <= 60; i++) {
+      const a = i / 60 * Math.PI * 2.6, r = 18 * (1 - i / 75);
+      const px = cx + sentido * Math.cos(a) * r, py = cy + Math.sin(a) * r * .75;
+      i ? x.lineTo(px, py) : x.moveTo(px, py);
+    }
+  };
+  x.lineCap = 'round';
+  espiral(); x.strokeStyle = '#1f2433'; x.lineWidth = 8; x.stroke();
+  espiral(); x.strokeStyle = color; x.lineWidth = 5; x.stroke();
+  espiral(); x.strokeStyle = 'rgba(255,255,255,.7)'; x.lineWidth = 1.2; x.stroke();
+}
+
 class Vista3D {
   constructor(cont, op) {
     Object.assign(this, op);
@@ -1355,22 +1393,22 @@ class Vista3D {
 
     const s = this.scene = new THREE.Scene();
     s.background = new THREE.Color(CIELO);
-    s.fog = new THREE.Fog(CIELO, 95, 190);
+    s.fog = new THREE.Fog(CIELO, 150, 300);
     this.camara = new THREE.PerspectiveCamera(36, 1, .1, 400);
     const c = this.controles = new OrbitControls(this.camara, r.domElement);
-    Object.assign(c, { enableDamping: true, dampingFactor: .08, minDistance: 14, maxDistance: 170,
+    Object.assign(c, { enableDamping: true, dampingFactor: .08, minDistance: 14, maxDistance: 260,
       minPolarAngle: .3, maxPolarAngle: 1.2, screenSpacePanning: false });
     c.target.set(.5, 0, 3);
 
     s.add(new THREE.HemisphereLight('#ffffff', '#86b070', 1.6));
     const sol = new THREE.DirectionalLight('#fff4dc', 2.2);
     sol.position.set(-24, 42, 20); sol.castShadow = true;
-    sol.shadow.mapSize.set(2048, 2048); sol.shadow.bias = -.0006; sol.shadow.normalBias = .02;
-    Object.assign(sol.shadow.camera, { left: -45, right: 45, top: 45, bottom: -45, near: 1, far: 140 });
+    sol.shadow.mapSize.set(3072, 3072); sol.shadow.bias = -.0006; sol.shadow.normalBias = .02;
+    Object.assign(sol.shadow.camera, { left: -62, right: 62, top: 62, bottom: -62, near: 1, far: 160 });
     s.add(sol);
 
     this.banderas = []; this.barcos = []; this.reservados = [];
-    this.suelo(); this.rio(); this.riachuelo(); this.laguna(); this.hitos(); this.construir(); this.puentes(); this.arboles();
+    this.suelo(); this.rio(); this.riachuelo(); this.laguna(); this.hitos(); this.lugares(); this.construir(); this.puentes(); this.colectivos(); this.arboles();
     this.raycaster = new THREE.Raycaster(); this.puntero = new THREE.Vector2();
     this.eventos();
     new ResizeObserver(() => this.medir()).observe(cont);
@@ -1379,7 +1417,7 @@ class Vista3D {
   }
 
   suelo() {
-    const piso = new THREE.Mesh(new THREE.PlaneGeometry(260, 260), toon('#ffffff', { map: TEX.pasto() }));
+    const piso = new THREE.Mesh(new THREE.PlaneGeometry(420, 420), toon('#ffffff', { map: TEX.pasto() }));
     piso.rotation.x = -Math.PI / 2; piso.receiveShadow = true; this.scene.add(piso);
   }
 
@@ -1504,7 +1542,7 @@ class Vista3D {
     this.reservados.push([cam.position, 4.2]);
 
     // Puente Transbordador Nicolas Avellaneda, sobre la boca del Riachuelo.
-    const tr = new THREE.Group(); tr.position.copy(a3([598, 311])); this.scene.add(tr);
+    const tr = new THREE.Group(); tr.position.copy(a3(TRANSBORDADOR)); this.scene.add(tr);
     const dr = a3(RIACHUELO[0]).sub(a3(RIACHUELO[2])); tr.rotation.y = -Math.atan2(dr.z, dr.x) + Math.PI / 2;
     const rojo = toon('#c8432f');
     for (const x of [-2.1, 2.1]) for (const z of [-.45, .45]) {
@@ -1555,6 +1593,160 @@ class Vista3D {
         break;
       }
     }
+  }
+  // Estadio: tribunas con LatheGeometry (perfil que gira), ovaladas, y cancha con lineas.
+  estadio(pos, colores, nombre) {
+    const g = new THREE.Group(); g.position.copy(a3(pos)); g.scale.set(1.05, .9, .88); this.scene.add(g);
+    const perfil = [[1.45, .3], [1.45, .5], [2.25, 1.55], [2.45, 1.55], [2.45, 0]].map(([x, y]) => new THREE.Vector2(x, y));
+    const tribuna = new THREE.Mesh(new THREE.LatheGeometry(perfil, 48), toon(colores[0], { side: THREE.DoubleSide }));
+    tribuna.castShadow = tribuna.receiveShadow = true; g.add(tribuna);
+    const tinta = new THREE.Mesh(new THREE.LatheGeometry(perfil.map(v => new THREE.Vector2(v.x + .06, v.y)), 48), TINTA_MAT); g.add(tinta);
+    const banda = new THREE.Mesh(new THREE.CylinderGeometry(2.47, 2.47, .3, 48, 1, true), toon(colores[1], { side: THREE.DoubleSide }));
+    banda.position.y = 1.1; g.add(banda);
+    const cancha = new THREE.Mesh(new THREE.CircleGeometry(1.46, 40), toon('#ffffff', { map: this.texCancha || (this.texCancha = lienzo(128, 128, (x, w, h) => {
+      for (let i = 0; i < 8; i++) { x.fillStyle = i % 2 ? '#5cb85c' : '#4cae4c'; x.fillRect(0, i * h / 8, w, h / 8); }
+      x.strokeStyle = '#fff'; x.lineWidth = 3; x.strokeRect(14, 30, w - 28, h - 60);
+      x.beginPath(); x.moveTo(14, h / 2); x.lineTo(w - 14, h / 2); x.stroke(); x.beginPath(); x.arc(w / 2, h / 2, 12, 0, 7); x.stroke();
+    })) }));
+    cancha.rotation.x = -Math.PI / 2; cancha.position.y = .32; g.add(cancha);
+    for (const a of [.6, 2.5, 3.8, 5.7]) {
+      const torre = new THREE.Mesh(new THREE.CylinderGeometry(.05, .07, 2.6, 6), toon('#d8d8d8'));
+      torre.position.set(Math.cos(a) * 2.2, 1.3, Math.sin(a) * 2.2); g.add(torre);
+      const foco = new THREE.Mesh(new THREE.BoxGeometry(.35, .2, .1), new THREE.MeshBasicMaterial({ color: '#fff6c8' }));
+      foco.position.set(Math.cos(a) * 2.2, 2.65, Math.sin(a) * 2.2); g.add(foco);
+    }
+    this.hito(nombre, new THREE.Vector3(0, 3.4, 0).add(g.position));
+    this.reservados.push([g.position, 3.2]);
+  }
+  lugares() {
+    this.estadio(BOMBONERA, ['#1d4fb8', '#f6c445'], 'La Bombonera');
+    this.estadio(MONUMENTAL, ['#f4f1ea', '#d62e2e'], 'Monumental');
+
+    // Planetario: cupula plateada sobre tres patas, en los bosques de Palermo.
+    const pl = new THREE.Group(); pl.position.copy(a3(PLANETARIO)); this.scene.add(pl);
+    const plaza = new THREE.Mesh(new THREE.CylinderGeometry(1.9, 2, .14, 36), toon('#d9d3c3')); plaza.position.y = .07; pl.add(contorno(plaza, .04));
+    for (let i = 0; i < 3; i++) {
+      const a = i * Math.PI * 2 / 3, pata = new THREE.Mesh(new THREE.CylinderGeometry(.09, .14, 1.6, 8), toon('#e8e6e0'));
+      pata.position.set(Math.cos(a) * .75, .85, Math.sin(a) * .75); pata.rotation.set(Math.sin(a) * .25, 0, -Math.cos(a) * .25); pata.castShadow = true; pl.add(pata);
+    }
+    const domo = new THREE.Mesh(new THREE.SphereGeometry(1.05, 28, 18), toon('#c9d3de'));
+    domo.position.y = 2.15; domo.castShadow = true; pl.add(contorno(domo, .05));
+    const anillo = new THREE.Mesh(new THREE.TorusGeometry(1.1, .08, 8, 36), toon('#8fa3b8')); anillo.rotation.x = Math.PI / 2; anillo.position.y = 2.15; pl.add(anillo);
+    this.hito('Planetario', new THREE.Vector3(0, 3.8, 0).add(pl.position));
+    this.reservados.push([pl.position, 2.8]);
+
+    // Casa Rosada con la Plaza de Mayo adelante.
+    const cr = new THREE.Group(); cr.position.copy(a3(CASA_ROSADA)); cr.rotation.y = -.55; this.scene.add(cr);
+    const plazaMayo = new THREE.Mesh(new THREE.BoxGeometry(3.6, .12, 1.6), toon('#d9d3c3')); plazaMayo.position.set(0, .06, 1.6); cr.add(contorno(plazaMayo, .04));
+    const piramide = new THREE.Mesh(new THREE.CylinderGeometry(.06, .22, 1.2, 4), toon('#f7f3e9')); piramide.position.set(0, .7, 1.6); piramide.castShadow = true; cr.add(contorno(piramide, .03));
+    const rosa = toon('#f2a3b3');
+    const cuerpo = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.3, 1.3), rosa); cuerpo.position.y = .75; cuerpo.castShadow = cuerpo.receiveShadow = true; cr.add(contorno(cuerpo));
+    const centro = new THREE.Mesh(new THREE.BoxGeometry(1, 1.75, 1.4), rosa); centro.position.y = .97; centro.castShadow = true; cr.add(contorno(centro));
+    const arco = new THREE.Mesh(new THREE.BoxGeometry(.45, .7, .05), toon('#5a3a3a')); arco.position.set(0, .45, .72); cr.add(arco);
+    for (const x of [-1.25, -.75, .75, 1.25]) {
+      const v = new THREE.Mesh(new THREE.BoxGeometry(.24, .34, .04), toon('#fffdf6')); v.position.set(x, .9, .66); cr.add(v);
+    }
+    this.bandera(cr, 0, 0, 3, .7);
+    this.hito('Casa Rosada', new THREE.Vector3(0, 3.6, 0).add(cr.position));
+    this.reservados.push([cr.position, 3.4]);
+
+    // Puente de la Mujer sobre un dique de Puerto Madero.
+    const pm = new THREE.Group(); pm.position.copy(a3(PUENTE_MUJER)); pm.rotation.y = -.72; this.scene.add(pm);
+    const dique = new THREE.Mesh(new THREE.BoxGeometry(5, .06, 1.7), toon('#ffffff', { map: this.texDique = TEX.agua() }));
+    this.texDique.repeat.set(2, .7); dique.position.y = .05; pm.add(dique);
+    const borde = new THREE.Mesh(new THREE.BoxGeometry(5.3, .04, 2.1), toon('#cfc7b5')); borde.position.y = .02; pm.add(borde);
+    const tablero = new THREE.Mesh(new THREE.BoxGeometry(.5, .14, 2.6), toon('#f7f3e9')); tablero.position.y = .3; tablero.castShadow = true; pm.add(contorno(tablero, .03));
+    const mastil = new THREE.Mesh(new THREE.CylinderGeometry(.06, .14, 3.4, 8), toon('#f7f3e9'));
+    mastil.position.set(0, 1.7, -.95); mastil.rotation.x = .55; mastil.castShadow = true; pm.add(contorno(mastil, .03));
+    for (const z of [-.6, -.1, .4, .9]) {
+      const cable = new THREE.Mesh(new THREE.CylinderGeometry(.015, .015, 1, 4), toon('#2a2f3a'));
+      const tope = new THREE.Vector3(0, 1.7 + Math.cos(.55) * 1.6, -.95 - Math.sin(.55) * 1.6), pie = new THREE.Vector3(0, .35, z);
+      cable.position.copy(tope).add(pie).multiplyScalar(.5); cable.scale.y = tope.distanceTo(pie);
+      cable.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), tope.clone().sub(pie).normalize()); pm.add(cable);
+    }
+    this.hito('Puente de la Mujer', new THREE.Vector3(0, 4.4, 0).add(pm.position));
+    this.reservados.push([pm.position, 3.2]);
+  }
+
+  // Colectivos fileteados que dan vueltas por la red (respetando la mano unica) cuando no se juega.
+  modeloColectivo(numero, cuerpo, franja) {
+    const lado = lienzo(256, 96, (x, w, h) => {
+      x.fillStyle = cuerpo; x.fillRect(0, 0, w, h);
+      x.fillStyle = franja; x.fillRect(0, 10, w, 40);
+      x.fillStyle = '#26303f';
+      for (let i = 0; i < 6; i++) x.fillRect(14 + i * 39, 16, 32, 28);
+      x.fillStyle = '#1f2433'; x.fillRect(0, 52, w, 3); x.fillRect(0, h - 12, w, 12);
+      fileteRizo(x, 30, 72, 1, '#f6c445'); fileteRizo(x, 226, 72, -1, '#e63946');
+      x.font = '900 30px "Barlow Condensed", Arial Narrow, sans-serif'; x.textAlign = 'center'; x.lineWidth = 5;
+      x.strokeStyle = '#1f2433'; x.strokeText(numero, w / 2, 82); x.fillStyle = '#fffdf6'; x.fillText(numero, w / 2, 82);
+    });
+    const frente = lienzo(96, 96, (x, w, h) => {
+      x.fillStyle = cuerpo; x.fillRect(0, 0, w, h);
+      x.fillStyle = '#f6c445'; x.fillRect(16, 6, 64, 16); x.fillStyle = '#1f2433'; x.font = '900 15px Arial'; x.textAlign = 'center'; x.fillText(numero, 48, 19);
+      x.fillStyle = '#26303f'; x.fillRect(8, 26, 80, 36);
+      x.fillStyle = '#fff3b0'; x.beginPath(); x.arc(18, 76, 6, 0, 7); x.arc(78, 76, 6, 0, 7); x.fill();
+    });
+    const atras = lienzo(96, 96, (x, w, h) => { x.fillStyle = cuerpo; x.fillRect(0, 0, w, h); x.fillStyle = '#e63946'; x.fillRect(8, 70, 14, 10); x.fillRect(74, 70, 14, 10); });
+    const techo = toon('#e9e6dd');
+    const caja = new THREE.Mesh(new THREE.BoxGeometry(2.6, 1.05, .95),
+      [toon('#fff', { map: frente }), toon('#fff', { map: atras }), techo, techo, toon('#fff', { map: lado }), toon('#fff', { map: lado })]);
+    caja.position.y = .74; caja.castShadow = true;
+    const g = new THREE.Group(); g.add(contorno(caja, .05));
+    for (const x of [-.8, .8]) for (const z of [-.47, .47]) {
+      const rueda = new THREE.Mesh(new THREE.CylinderGeometry(.24, .24, .16, 14), toon('#2a2f3a'));
+      rueda.rotation.x = Math.PI / 2; rueda.position.set(x, .24, z); g.add(rueda);
+    }
+    g.visible = false; this.scene.add(g);
+    return g;
+  }
+  colectivos() {
+    this.salidas = {};
+    for (const r of Object.values(this.rutas)) (this.salidas[r.origen] ||= []).push(r);
+    const lineas = [['60', '#2557c4', '#f2e6c9'], ['152', '#2a9d8f', '#f6e7b9'], ['29', '#d63a3a', '#fbeed3'], ['64', '#f2b21b', '#e63946']];
+    this.buses = lineas.map(([num, cuerpo, franja], i) => {
+      const bus = { g: this.modeloColectivo(num, cuerpo, franja), vel: 3 + i * .3, aparicion: 0 };
+      this.largarColectivo(bus, i);
+      return bus;
+    });
+  }
+  largarColectivo(bus, i) {
+    const conSalida = Object.values(this.salidas).flat();
+    bus.ruta = conSalida[(i * 5 + Math.floor(performance.now())) % conSalida.length];
+    bus.t = 0; bus.giro = null; bus.aparicion = 0;
+  }
+  moverColectivos(dt, t) {
+    // Se esconden mientras se juega: hay camiones, rutas pintadas o lugares marcados.
+    const ocupado = this.camiones.length > 0 || Object.values(this.rutas).some(r => r.activo) || Object.values(this.nodos).some(n => n.foco);
+    const carril = .3;
+    this.buses.forEach((b, i) => {
+      b.visibleMeta = ocupado ? 0 : 1;
+      b.aparicion += (b.visibleMeta - b.aparicion) * Math.min(1, dt * 5);
+      b.g.visible = b.aparicion > .03; b.g.scale.setScalar(b.aparicion);
+      let x, z, ang;
+      if (b.giro) {
+        const gi = b.giro; gi.t = Math.min(1, gi.t + dt * b.vel / gi.largo);
+        const a = gi.a0 + gi.delta * gi.t, r = gi.r0 + (gi.r1 - gi.r0) * gi.t;
+        x = gi.c.x + Math.cos(a) * r; z = gi.c.z + Math.sin(a) * r; ang = a + Math.sign(gi.delta) * Math.PI / 2;
+        if (gi.t >= 1) { b.giro = null; b.ruta = gi.siguiente; b.t = 0; }
+      } else {
+        const ru = b.ruta; b.t = Math.min(1, b.t + dt * b.vel / ru.L);
+        x = ru.ini.x + (ru.fin.x - ru.ini.x) * b.t; z = ru.ini.z + (ru.fin.z - ru.ini.z) * b.t;
+        ang = Math.atan2(ru.fin.z - ru.ini.z, ru.fin.x - ru.ini.x);
+        x -= Math.sin(ang) * carril; z += Math.cos(ang) * carril;
+        if (b.t >= 1) {
+          const opciones = this.salidas[ru.destino];
+          if (!opciones) { this.largarColectivo(b, i + 1); return; }  // sin salida: aparece en otra parte de la red
+          const sig = opciones[Math.floor(Math.random() * opciones.length)];
+          const c = this.nodos[ru.destino].g.position;
+          const a0 = Math.atan2(ru.fin.z - c.z, ru.fin.x - c.x), a1 = Math.atan2(sig.ini.z - c.z, sig.ini.x - c.x);
+          let delta = a1 - a0; while (delta > Math.PI) delta -= 2 * Math.PI; while (delta < -Math.PI) delta += 2 * Math.PI;
+          const r0 = ru.fin.distanceTo(c), r1 = sig.ini.distanceTo(c);
+          b.giro = { c, a0, delta, r0, r1, t: 0, largo: Math.max(.5, Math.abs(delta) * (r0 + r1) / 2), siguiente: sig };
+        }
+      }
+      b.g.position.set(x, .12 + Math.abs(Math.sin(t * 9 + i)) * .03, z);
+      b.g.rotation.y = -ang;
+    });
   }
   libre(x, z) {
     for (const p of this.puntosRiachuelo) if (Math.hypot(x - p.x, z - p.z) < 2.4) return false;
@@ -1641,7 +1833,8 @@ class Vista3D {
       flecha.rotation.z = -Math.PI / 2; flecha.position.set(L / 2 + .3, .45, 0); flecha.castShadow = true; g.add(contorno(flecha, .05));
       const el = document.createElement('div'); el.className = 'km3d'; el.textContent = this.fmt(r.km) + ' km';
       const lbl = new CSS2DObject(el); lbl.position.set(0, .25, 1.35); g.add(lbl);
-      this.rutas[r.origen + '>' + r.destino] = { asfalto, guiones, tex, flecha, el, activo: false, signo: 1, A, B };
+      this.rutas[r.origen + '>' + r.destino] = { asfalto, guiones, tex, flecha, el, activo: false, signo: 1, A, B, ini, fin, L,
+        origen: r.origen, destino: r.destino };
     }
   }
 
@@ -1657,14 +1850,15 @@ class Vista3D {
       }
       return true;
     };
-    for (let x = -46; x <= 52; x += 2.6) for (let z = -34; z <= 40; z += 2.6) {
+    const [x0, z0] = [(-80 - CX) / ESC, (-60 - CZ) / ESC], [x1, z1] = [(780 - CX) / ESC, (740 - CZ) / ESC];
+    for (let x = x0; x <= x1; x += 2.6) for (let z = z0; z <= z1; z += 2.6) {
       if (r() < .74) continue;
       const px = x + (r() - .5) * 2, pz = z + (r() - .5) * 2;
       if (!esTierra(px * ESC + CX, pz * ESC + CZ, 20) || !lejosDe(px, pz) || !this.libre(px, pz)) continue;
       puestos.push([px, pz, .55 + r() * .45, r()]);
     }
     const n = puestos.length, m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
-    const copa = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 0), toon('#ffffff', { flatShading: true }), n);
+    const copa = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 0), toon('#ffffff'), n);
     const tinta = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 0), TINTA_MAT, n);
     const tronco = new THREE.InstancedMesh(new THREE.CylinderGeometry(.16, .22, 1, 6), toon('#8a5a36'), n);
     const verdes = ['#4fae5a', '#5cbf66', '#3f9b55', '#74c46b'].map(c => new THREE.Color(c));
@@ -1768,7 +1962,7 @@ class Vista3D {
   posicionIdeal() {
     const dir = new THREE.Vector3(-5, 22, 31).normalize(), t = this.controles.target;
     const cam = this.camara.clone(), p = new THREE.Vector3();
-    for (let d = 18; d < 140; d += 1.5) {
+    for (let d = 18; d < 240; d += 1.5) {
       cam.position.copy(t).addScaledVector(dir, d); cam.lookAt(t); cam.updateMatrixWorld();
       const entra = Object.values(this.nodos).every(n => [0, n.alto + 2].every(h => {
         p.copy(n.g.position).setY(h).project(cam);
@@ -1776,11 +1970,12 @@ class Vista3D {
       }));
       if (entra) return cam.position.clone();
     }
-    return t.clone().addScaledVector(dir, 70);
+    return t.clone().addScaledVector(dir, 110);
   }
   recentrar(desdeLejos) {
     this.controles.target.set(.5, 0, 3);
     const hasta = this.posicionIdeal();
+    this.distIdeal = hasta.distanceTo(this.controles.target);
     const desde = desdeLejos ? hasta.clone().multiplyScalar(1.9).add(new THREE.Vector3(30, 20, 0)) : this.camara.position.clone();
     this.camara.position.copy(desde);
     this.vuelo = { desde, hasta, t0: performance.now(), dur: desdeLejos ? 1800 : 900 };
@@ -1806,7 +2001,8 @@ class Vista3D {
     }
     this.controles.update();
     this.texAgua.offset.set(t * .012, t * .02);
-    this.texRiachuelo.offset.x = -t * .05; this.texLaguna.offset.set(t * .01, t * .006);
+    this.texRiachuelo.offset.x = -t * .05; this.texLaguna.offset.set(t * .01, t * .006); this.texDique.offset.x = t * .02;
+    this.moverColectivos(dt, t);
     for (const b of this.banderas) {
       const pos = b.geo.attributes.position;
       for (let i = 0; i < pos.count; i++) {
@@ -1829,6 +2025,8 @@ class Vista3D {
       if (n.marca.visible) { n.marca.rotation.y = t * 2; n.marca.position.y = n.alto + 1.3 + Math.sin(t * 3 + n.alto) * .18; }
     }
     this.alGirar(this.controles.getAzimuthalAngle() * 180 / Math.PI);
+    const cerca = this.camara.position.distanceTo(this.controles.target) < (this.distIdeal || 1e9) * .82;
+    if (cerca !== this.cerca) { this.cerca = cerca; this.etiquetas.domElement.classList.toggle('cerca', cerca); }
     this.renderer.render(this.scene, this.camara);
     this.etiquetas.render(this.scene, this.camara);
   }
