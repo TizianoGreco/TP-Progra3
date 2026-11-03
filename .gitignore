@@ -18,3 +18,6 @@ application-local.properties
 
 ### Claude Code local ###
 .claude/
+
+### macOS ###
+.DS_Store
