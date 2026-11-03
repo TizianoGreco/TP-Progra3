@@ -280,7 +280,8 @@ curl "http://localhost:8080/api/grafo/resumen"
 Con la aplicación levantada, **http://localhost:8080/** abre una página visual: el mapa de la
 red con los recorridos, caminos mínimos, árboles y rutas animados, y dos juegos para comparar
 contra los algoritmos ("Ganale a Dijkstra" y "Cargá el camión", Greedy vs. Programación
-Dinámica). La página no implementa ningún algoritmo: dibuja lo que devuelve la API.
+Dinámica). El mapa tiene vista 2D y 3D (Three.js, se carga desde CDN; sin internet queda la
+vista 2D). La página no implementa ningún algoritmo: dibuja lo que devuelve la API.
 
 La carga inicial se omite si la base ya tiene datos. Para recargar el dominio, ejecutar
 `MATCH (n) DETACH DELETE n` en Neo4j y reiniciar la aplicación. Las requests de ejemplo

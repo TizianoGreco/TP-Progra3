@@ -277,6 +277,34 @@
 
   .campo.solo { grid-column: 1 / 3; }
 
+  /* vista 3D */
+  .escena3d { position: absolute; inset: 0; z-index: 1; }
+  .escena3d[hidden] { display: none; }
+  .escena3d canvas { display: block; touch-action: none; }
+  .capa-etiquetas { position: absolute; inset: 0; pointer-events: none; }
+  .lbl3d { text-align: center; pointer-events: none; transition: transform .2s; }
+  .lbl3d b { display: inline-block; font: 700 13px/1 var(--display); letter-spacing: .08em; color: var(--ink);
+             background: rgba(13,17,24,.86); border: 1px solid var(--line2); border-radius: 4px; padding: 4px 7px; }
+  .lbl3d span { display: block; margin-top: 3px; font: 500 11px var(--body); color: var(--muted); text-shadow: 0 1px 3px #000; }
+  .lbl3d.foco b { border-color: var(--tono); color: var(--tono); }
+  .lbl3d.sobre b { border-color: var(--muted); }
+  .lbl3d .orden { display: none; position: absolute; top: -9px; right: -11px; min-width: 19px; height: 19px; padding: 0 4px;
+                  border-radius: 10px; background: var(--amber); color: var(--amber-ink); font: 700 10.5px/19px var(--mono); font-style: normal; }
+  .lbl3d.con-orden .orden { display: block; }
+  .lbl3d { position: relative; }
+  .km3d { font: 600 10.5px var(--mono); color: var(--dim); background: rgba(9,12,17,.75); padding: 1px 4px; border-radius: 3px; }
+  .km3d.on { color: var(--ink); }
+  .rio3d { font: italic 500 13px var(--body); color: #2f5577; letter-spacing: .3em; text-transform: uppercase; white-space: nowrap; }
+  .hud.der { right: 16px; top: 14px; display: flex; gap: 6px; pointer-events: auto; }
+  .seg { display: flex; background: rgba(13,17,24,.85); border: 1px solid var(--line2); border-radius: 7px; padding: 2px; }
+  .seg button, .icono { border: 0; background: none; cursor: pointer; color: var(--muted); font: 700 12px/1 var(--display);
+                        letter-spacing: .1em; padding: 7px 11px; border-radius: 5px; }
+  .seg button.on { background: var(--raise); color: var(--ink); box-shadow: inset 0 -2px 0 var(--amber); }
+  .icono { background: rgba(13,17,24,.85); border: 1px solid var(--line2); border-radius: 7px; display: grid; place-items: center; padding: 0 9px; }
+  .icono[hidden] { display: none; }
+  .seg button:hover, .icono:hover { color: var(--ink); }
+  #brujula { transition: transform .1s linear; }
+
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
   }
@@ -323,8 +351,17 @@
 <div class="escena">
   <section class="mapa-wrap">
     <svg id="mapa" viewBox="0 0 680 560" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Mapa de la red logística"></svg>
+    <div id="escena3d" class="escena3d" hidden></div>
+    <div class="hud der">
+      <div class="seg" role="group" aria-label="Vista del mapa">
+        <button data-vista="2d">2D</button><button data-vista="3d">3D</button>
+      </div>
+      <button class="icono" id="recentrar" title="Recentrar la cámara" aria-label="Recentrar la cámara" hidden>
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="3"/><path d="M8 1v3M8 12v3M1 8h3M12 8h3"/></svg>
+      </button>
+    </div>
     <div class="hud sup">
-      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
+      <svg id="brujula" width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
         <circle cx="17" cy="17" r="15.5" fill="rgba(13,17,24,.8)" stroke="#2b3646"/>
         <path d="M17 6 L21 18 L17 15.5 L13 18 Z" fill="#ffb547"/><path d="M17 28 L13 16 L17 18.5 L21 16 Z" fill="#3a4658"/>
         <text x="17" y="5.2" text-anchor="middle" font-size="6" font-weight="700" fill="#8b97a8" font-family="JetBrains Mono, monospace" dy="-.2">N</text>
@@ -494,6 +531,7 @@ const fmt = n => Number.isInteger(n) ? String(n) : n.toFixed(1);
 let red = { nodos: [], rutas: [] }, paquetes = [];
 const elNodo = {}, elRuta = {};
 let capaCamiones, animacion = 0, modo = 'mision';
+let v3 = null;  // vista 3D, si Three.js cargo
 
 const guardado = {
   leer(k, def) { try { const v = localStorage.getItem('tp3.' + k); return v === null ? def : JSON.parse(v); } catch (e) { return def; } },
@@ -587,7 +625,7 @@ function dibujar() {
 
 function limpiar() {
   animacion++;
-  capaCamiones.innerHTML = '';
+  sacarCamiones();
   for (const id in elNodo) {
     const e = elNodo[id];
     e.cuerpo.setAttribute('stroke', e.color); e.cuerpo.setAttribute('fill', e.fondo);
@@ -600,10 +638,16 @@ function limpiar() {
     r.base.style.stroke = ''; r.base.style.opacity = ''; r.base.setAttribute('marker-end', 'url(#f-base)');
     r.flujo.style.opacity = 0;
   }
+  if (v3) v3.limpiar();
+}
+function sacarCamiones() {
+  capaCamiones.innerHTML = '';
+  if (v3) v3.sacarCamiones();
 }
 function marcarRuta(a, b, tono) {
   const r = elRuta[clave(a, b)] || elRuta[clave(b, a)];  // el arbol no tiene sentido
   if (!r) return;
+  if (v3) v3.ruta(elRuta[clave(a, b)] ? clave(a, b) : clave(b, a), tono, r.origen !== a);
   r.g.classList.add('ruta-on');
   r.base.style.stroke = TONO[tono]; r.base.style.opacity = .4;
   r.base.setAttribute('marker-end', `url(#f-${tono})`);
@@ -612,6 +656,7 @@ function marcarRuta(a, b, tono) {
 }
 function marcarNodo(id, tono, orden) {
   const e = elNodo[id]; if (!e) return;
+  if (v3) v3.nodo(id, tono, orden);
   e.cuerpo.setAttribute('stroke', TONO[tono]);
   e.halo.setAttribute('fill', TONO[tono]); e.g.classList.add('foco');
   if (orden !== undefined) { e.orden.textContent = orden; e.ficha.setAttribute('opacity', 1); }
@@ -621,6 +666,7 @@ function marcarNodo(id, tono, orden) {
 function camion(tono) {
   const c = TONO[tono];
   const g = crear('g', { opacity: 0 }, capaCamiones);
+  g.v3 = v3 ? v3.camion(tono) : null;
   g.innerHTML = `<g transform="translate(-13 -9)">
       <rect x="0" y="1" width="17" height="14" rx="2" fill="${c}"/>
       <path d="M18 4 h4.5 l3.5 4.5 v6.5 h-8 z" fill="${c}"/>
@@ -634,6 +680,7 @@ async function conducir(vertices, tono, msPorTramo = 520, alPasar) {
   const ubicar = (x, y, ang) => {
     const espejo = Math.abs(ang) > 90 ? ' scale(1 -1)' : '';
     g.setAttribute('transform', `translate(${x} ${y}) rotate(${ang})${espejo}`);
+    if (g.v3) g.v3(x, y, ang);
   };
   ubicar(...POS[vertices[0]], 0); g.setAttribute('opacity', 1);
   for (let i = 1; i < vertices.length; i++) {
@@ -787,7 +834,7 @@ async function terminarMision() {
       (a, b) => { marcarRuta(a, b, 'coral'); marcarNodo(b, 'coral'); }))
   ]);
   if (yo !== animacion) return;
-  capaCamiones.innerHTML = '';  // los camiones ya llegaron: se sacan para que se lea el destino
+  sacarCamiones();  // los camiones ya llegaron: se sacan para que se lea el destino
   $('r-kicker').textContent = `+${gana} puntos`;
   const t = $('r-titulo');
   t.textContent = n === 3 ? 'Ruta óptima' : `+${fmt(exceso)} km de más`;
@@ -962,7 +1009,7 @@ $('l-ejecutar').addEventListener('click', async () => {
         marcarRuta(x, y, 'teal'); marcarNodo(y, fin ? 'coral' : 'teal');
         linea(cons, i, `${x} → <em>${y}</em> · ${fmt(kmDe(x, y))} km`, fin ? 'dest' : '');
       });
-      if (yo === animacion) capaCamiones.innerHTML = '';
+      if (yo === animacion) sacarCamiones();
     } else if (a.id === 'prim' || a.id === 'kruskal') {
       const mst = await api(a.id === 'prim' ? `/api/grafo/prim?origen=${o}` : '/api/grafo/kruskal');
       resumen([['Aristas', mst.aristas.length], ['Total', fmt(mst.costoTotal) + ' km'], ['Nodos', red.nodos.length]]);
@@ -1003,6 +1050,34 @@ $('btn-equipo').addEventListener('click', () => $('equipo').showModal());
 $('cerrar-equipo').addEventListener('click', () => $('equipo').close());
 $('equipo').addEventListener('click', ev => { if (ev.target === $('equipo')) $('equipo').close(); });
 
+// ---------------------------------------------------------------- vista 2D / 3D
+let vista = guardado.leer('vista', '3d');
+function mostrarVista(v) {
+  const tres = v === '3d' && !!v3;
+  svg.style.display = tres ? 'none' : '';
+  $('escena3d').hidden = !tres;
+  $('recentrar').hidden = !tres;
+  document.querySelectorAll('[data-vista]').forEach(b => b.classList.toggle('on', b.dataset.vista === (tres ? '3d' : '2d')));
+  if (!tres) $('brujula').style.transform = '';
+  if (v3) v3.activo(tres);
+}
+document.querySelectorAll('[data-vista]').forEach(b => b.addEventListener('click', () => {
+  if (b.dataset.vista === '3d' && !v3) { avisar('La vista 3D necesita internet (Three.js) y WebGL.'); return; }
+  vista = b.dataset.vista; guardado.escribir('vista', vista); mostrarVista(vista);
+}));
+$('recentrar').addEventListener('click', () => v3 && v3.recentrar(false));
+function iniciar3D() {
+  if (v3 || !window.Vista3D || !red.nodos.length) return;
+  try {
+    v3 = new window.Vista3D($('escena3d'), { red, POS, TONO, fmt, corto, alClic: clicNodo,
+      alGirar: grados => { $('brujula').style.transform = `rotate(${grados}deg)`; } });
+  } catch (e) { v3 = null; return; }  // sin WebGL: queda el 2D
+  mostrarVista(vista);
+  cambiarModo(modo);  // repinta el estado actual en las dos vistas
+}
+window.addEventListener('vista3d-lista', iniciar3D);
+mostrarVista('2d');
+
 // ---------------------------------------------------------------- arranque
 $('reintentar').addEventListener('click', () => location.reload());
 (async function () {
@@ -1031,7 +1106,311 @@ $('reintentar').addEventListener('click', () => location.reload());
   }
   pintarAlgos();
   pintarCarga();
+  iniciar3D();
 })();
+</script>
+<!-- Vista 3D: Three.js solo se usa para dibujar. Si no carga (sin internet o sin WebGL), queda la vista 2D. -->
+<script type="importmap">
+{ "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+// Mismas coordenadas que el mapa 2D, llevadas al plano XZ (1 unidad = 12 px).
+const ESC = 12, CX = 340, CZ = 290;
+const a3 = ([x, y]) => new THREE.Vector3((x - CX) / ESC, 0, (y - CZ) / ESC);
+const GRIS = '#3a4658';
+const LADO = { amber: .42, coral: -.42, teal: 0 };  // carril de cada camion, para que no se pisen
+
+function texturaDeGuiones() {
+  const c = document.createElement('canvas'); c.width = 64; c.height = 16;
+  const x = c.getContext('2d'); x.fillStyle = '#fff';
+  x.beginPath(); x.roundRect(6, 4, 30, 8, 4); x.fill();
+  const t = new THREE.CanvasTexture(c); t.wrapS = THREE.RepeatWrapping; t.anisotropy = 4;
+  return t;
+}
+function texturaDeBrillo() {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const x = c.getContext('2d'), g = x.createRadialGradient(64, 64, 0, 64, 64, 64);
+  g.addColorStop(0, 'rgba(255,255,255,.9)'); g.addColorStop(.45, 'rgba(255,255,255,.25)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+  x.fillStyle = g; x.fillRect(0, 0, 128, 128);
+  return new THREE.CanvasTexture(c);
+}
+
+class Vista3D {
+  constructor(cont, op) {
+    Object.assign(this, op);
+    this.cont = cont; this.nodos = {}; this.rutas = {}; this.zonas = []; this.camiones = []; this.encendido = false;
+    const r = this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    r.setPixelRatio(Math.min(2, window.devicePixelRatio));
+    r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
+    r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.15;
+    cont.appendChild(r.domElement);
+    this.etiquetas = new CSS2DRenderer();
+    this.etiquetas.domElement.className = 'capa-etiquetas';
+    cont.appendChild(this.etiquetas.domElement);
+
+    const s = this.scene = new THREE.Scene();
+    s.background = new THREE.Color('#090c11');
+    s.fog = new THREE.Fog('#090c11', 120, 240);
+    this.camara = new THREE.PerspectiveCamera(36, 1, .1, 400);
+    const c = this.controles = new OrbitControls(this.camara, r.domElement);
+    Object.assign(c, { enableDamping: true, dampingFactor: .08, minDistance: 14, maxDistance: 170,
+      minPolarAngle: .3, maxPolarAngle: 1.2, screenSpacePanning: false });
+    c.target.set(.5, 0, 3);
+
+    s.add(new THREE.HemisphereLight('#b4c6e6', '#0b0f15', 1.1));
+    const sol = new THREE.DirectionalLight('#ffe8c8', 1.9);
+    sol.position.set(-24, 42, 20); sol.castShadow = true;
+    sol.shadow.mapSize.set(2048, 2048); sol.shadow.bias = -.0005;
+    Object.assign(sol.shadow.camera, { left: -42, right: 42, top: 42, bottom: -42, near: 1, far: 140 });
+    s.add(sol);
+    const contra = new THREE.DirectionalLight('#5b9dff', .7); contra.position.set(26, 14, -24); s.add(contra);
+
+    this.texGuion = texturaDeGuiones(); this.texBrillo = texturaDeBrillo();
+    this.suelo(); this.rio(); this.construir();
+    this.raycaster = new THREE.Raycaster(); this.puntero = new THREE.Vector2();
+    this.eventos();
+    new ResizeObserver(() => this.medir()).observe(cont);
+    this.reloj = new THREE.Clock();
+    r.setAnimationLoop(() => this.cuadro());
+  }
+
+  suelo() {
+    const piso = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshStandardMaterial({ color: '#111821', roughness: .95 }));
+    piso.rotation.x = -Math.PI / 2; piso.receiveShadow = true; this.scene.add(piso);
+    const grilla = new THREE.GridHelper(400, 120, '#19212c', '#141b24');
+    grilla.position.y = .01; this.scene.add(grilla);
+  }
+
+  rio() {
+    const p = (x, y) => [(x - CX) / ESC, -(y - CZ) / ESC];
+    const traza = f => { f.lineTo(...p(318, 0)); f.bezierCurveTo(...p(350, 70), ...p(390, 120), ...p(470, 190));
+                         f.bezierCurveTo(...p(550, 260), ...p(600, 300), ...p(680, 352)); f.lineTo(...p(2400, 1500)); };
+    const forma = new THREE.Shape(); forma.moveTo(...p(290, -1500)); traza(forma);
+    forma.lineTo(...p(2400, -1500)); forma.closePath();
+    this.agua = new THREE.Mesh(new THREE.ShapeGeometry(forma, 40),
+      new THREE.MeshStandardMaterial({ color: '#0a1b2b', roughness: .3, metalness: .2, emissive: '#05101b', emissiveIntensity: 1 }));
+    this.agua.rotation.x = -Math.PI / 2; this.agua.position.y = .04; this.agua.receiveShadow = true;
+    this.scene.add(this.agua);
+    const costa = new THREE.Path(); costa.moveTo(...p(300, -400)); traza(costa);
+    const pts = costa.getPoints(60).map(v => new THREE.Vector3(v.x, .08, -v.y));
+    this.scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: '#2b5a80' })));
+    const el = document.createElement('div'); el.className = 'rio3d'; el.textContent = 'Río de la Plata';
+    const lbl = new CSS2DObject(el); lbl.position.copy(a3([560, 110])); this.scene.add(lbl);
+  }
+
+  construir() {
+    const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: .6, metalness: .15, ...extra });
+    for (const n of this.red.nodos) {
+      const centro = n.tipo === 'CENTRO';
+      const color = new THREE.Color(centro ? '#5b9dff' : '#43c58a');
+      const g = new THREE.Group(); g.position.copy(a3(this.POS[n.id])); this.scene.add(g);
+
+      const base = new THREE.Mesh(new THREE.CylinderGeometry(2.15, 2.3, .26, 48), mat('#1e2733', { roughness: .85 }));
+      base.position.y = .13; base.receiveShadow = base.castShadow = true; g.add(base);
+      const anillo = new THREE.Mesh(new THREE.RingGeometry(2.02, 2.3, 64), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: .85 }));
+      anillo.rotation.x = -Math.PI / 2; anillo.position.y = .27; g.add(anillo);
+      const halo = new THREE.Mesh(new THREE.PlaneGeometry(9, 9), new THREE.MeshBasicMaterial({
+        map: this.texBrillo, color, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }));
+      halo.rotation.x = -Math.PI / 2; halo.position.y = .3; g.add(halo);
+
+      let cuerpo, banda;
+      if (centro) {
+        cuerpo = new THREE.Mesh(new THREE.BoxGeometry(2.7, 1.7, 2.1), mat('#2c4770'));
+        cuerpo.position.y = 1.11;
+        banda = new THREE.Mesh(new THREE.BoxGeometry(2.74, .14, 2.14), new THREE.MeshBasicMaterial({ color }));
+        banda.position.y = 1.98;
+        for (const x of [-.65, .65]) {
+          const dock = new THREE.Mesh(new THREE.BoxGeometry(.75, .85, .06), mat('#0b1018', { roughness: .4 }));
+          dock.position.set(x, .7, 1.08); g.add(dock);
+        }
+      } else {
+        cuerpo = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 1.9, 32), mat('#245a45'));
+        cuerpo.position.y = 1.21;
+        const tapa = new THREE.Mesh(new THREE.CylinderGeometry(.35, 1, .55, 32), mat('#2d6b53'));
+        tapa.position.y = 2.43; tapa.castShadow = true; g.add(tapa);
+        banda = new THREE.Mesh(new THREE.CylinderGeometry(1.02, 1.02, .14, 32), new THREE.MeshBasicMaterial({ color }));
+        banda.position.y = 2.05;
+      }
+      cuerpo.castShadow = cuerpo.receiveShadow = true; g.add(cuerpo, banda);
+      const bordes = new THREE.LineSegments(new THREE.EdgesGeometry(cuerpo.geometry, 35),
+        new THREE.LineBasicMaterial({ color, transparent: true, opacity: .7 }));
+      bordes.position.copy(cuerpo.position); g.add(bordes);
+
+      const zona = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.4, 4, 12), new THREE.MeshBasicMaterial({ visible: false }));
+      zona.position.y = 2; zona.userData.id = n.id; g.add(zona); this.zonas.push(zona);
+
+      const el = document.createElement('div'); el.className = 'lbl3d';
+      el.innerHTML = `<i class="orden"></i><b>${n.id}</b><span>${this.corto(n.id)}</span>`;
+      const lbl = new CSS2DObject(el); lbl.position.set(0, 3.9, 0); lbl.center.set(.5, 1); g.add(lbl);
+      this.nodos[n.id] = { g, anillo, halo, banda, bordes, color, el, foco: false };
+    }
+
+    for (const r of this.red.rutas) {
+      const A = a3(this.POS[r.origen]), B = a3(this.POS[r.destino]);
+      const dir = B.clone().sub(A).normalize();
+      const ini = A.clone().addScaledVector(dir, 2.35), fin = B.clone().addScaledVector(dir, -2.7);
+      const L = ini.distanceTo(fin);
+      const g = new THREE.Group(); g.position.copy(ini.clone().add(fin).multiplyScalar(.5));
+      g.rotation.y = -Math.atan2(dir.z, dir.x); this.scene.add(g);
+      const asfalto = new THREE.Mesh(new THREE.BoxGeometry(L, .12, 1), mat('#283241', { roughness: .9, metalness: 0 }));
+      asfalto.position.y = .06; asfalto.receiveShadow = true; g.add(asfalto);
+      const tex = this.texGuion.clone(); tex.needsUpdate = true; tex.repeat.set(Math.max(1, L / 1.3), 1);
+      const guiones = new THREE.Mesh(new THREE.PlaneGeometry(L, .3), new THREE.MeshBasicMaterial({ map: tex, color: GRIS, transparent: true, depthWrite: false }));
+      guiones.rotation.x = -Math.PI / 2; guiones.position.y = .13; g.add(guiones);
+      const flecha = new THREE.Mesh(new THREE.ConeGeometry(.55, 1.05, 20), mat(GRIS));
+      flecha.rotation.z = -Math.PI / 2; flecha.position.set(L / 2 + .3, .4, 0); flecha.castShadow = true; g.add(flecha);
+      const el = document.createElement('div'); el.className = 'km3d'; el.textContent = this.fmt(r.km);
+      const lbl = new CSS2DObject(el); lbl.position.set(0, .2, 1.25); g.add(lbl);
+      this.rutas[r.origen + '>' + r.destino] = { asfalto, guiones, tex, flecha, el, activo: false, signo: 1 };
+    }
+  }
+
+  // ---- estado, mismo contrato que el mapa 2D
+  limpiar() {
+    for (const id in this.nodos) {
+      const n = this.nodos[id];
+      n.foco = false; n.anillo.material.color.copy(n.color); n.halo.material.color.copy(n.color);
+      n.banda.material.color.copy(n.color); n.bordes.material.color.copy(n.color);
+      n.el.classList.remove('foco', 'con-orden'); n.el.style.removeProperty('--tono');
+    }
+    for (const k in this.rutas) {
+      const r = this.rutas[k];
+      r.activo = false; r.guiones.material.color.set(GRIS); r.flecha.material.color.set(GRIS);
+      r.flecha.material.emissive.set('#000'); r.asfalto.material.emissive.set('#000'); r.el.classList.remove('on');
+    }
+    this.sacarCamiones();
+  }
+  nodo(id, tono, orden) {
+    const n = this.nodos[id]; if (!n) return;
+    const c = this.TONO[tono];
+    n.foco = true; n.anillo.material.color.set(c); n.halo.material.color.set(c);
+    n.banda.material.color.set(c); n.bordes.material.color.set(c);
+    n.el.classList.add('foco'); n.el.style.setProperty('--tono', c);
+    if (orden !== undefined) { n.el.querySelector('.orden').textContent = orden; n.el.classList.add('con-orden'); }
+  }
+  ruta(clave, tono, invertida) {
+    const r = this.rutas[clave]; if (!r) return;
+    const c = this.TONO[tono];
+    r.activo = true; r.signo = invertida ? -1 : 1;
+    r.guiones.material.color.set(c); r.flecha.material.color.set(c); r.flecha.material.emissive.set(c).multiplyScalar(.5);
+    r.asfalto.material.emissive.set(c).multiplyScalar(.12); r.el.classList.add('on');
+  }
+  camion(tono) {
+    const c = new THREE.Color(this.TONO[tono]);
+    const g = new THREE.Group(), m = (col, extra) => new THREE.MeshStandardMaterial({ color: col, roughness: .45, metalness: .15, ...extra });
+    const pieza = (geo, mat, x, y, z) => { const o = new THREE.Mesh(geo, mat); o.position.set(x, y, z); o.castShadow = true; g.add(o); return o; };
+    pieza(new THREE.BoxGeometry(1.55, 1, .9), m(c), -.28, .82, 0);
+    pieza(new THREE.BoxGeometry(.62, .74, .86), m(c.clone().multiplyScalar(.72)), .85, .67, 0);
+    pieza(new THREE.BoxGeometry(.05, .32, .7), m('#0b1220', { metalness: .7, roughness: .15 }), 1.17, .82, 0);
+    for (const z of [-.3, .3]) pieza(new THREE.BoxGeometry(.04, .1, .14), new THREE.MeshBasicMaterial({ color: '#fff6d8' }), 1.17, .45, z);
+    for (const x of [-.72, .62]) for (const z of [-.45, .45]) {
+      const rueda = pieza(new THREE.CylinderGeometry(.23, .23, .16, 18), m('#090c11'), x, .23, z); rueda.rotation.x = Math.PI / 2;
+    }
+    g.scale.setScalar(1.1); g.visible = false; this.scene.add(g); this.camiones.push(g);
+    const lado = LADO[tono] || 0;
+    return (x, y, ang) => {
+      const p = a3([x, y]), rad = ang * Math.PI / 180;
+      g.position.set(p.x - Math.sin(rad) * lado, .12, p.z + Math.cos(rad) * lado);
+      g.rotation.y = -rad; g.visible = true;
+    };
+  }
+  sacarCamiones() {
+    for (const g of this.camiones) this.scene.remove(g);
+    this.camiones = [];
+  }
+
+  // ---- camara e interaccion
+  eventos() {
+    const el = this.renderer.domElement; let ini = null;
+    const tomar = ev => {
+      const r = el.getBoundingClientRect();
+      this.puntero.set((ev.clientX - r.left) / r.width * 2 - 1, -(ev.clientY - r.top) / r.height * 2 + 1);
+      this.raycaster.setFromCamera(this.puntero, this.camara);
+      const hit = this.raycaster.intersectObjects(this.zonas, false)[0];
+      return hit ? hit.object.userData.id : null;
+    };
+    el.addEventListener('pointerdown', ev => { ini = [ev.clientX, ev.clientY]; this.vuelo = null; });
+    el.addEventListener('pointerup', ev => {
+      if (!ini) return;
+      const mov = Math.hypot(ev.clientX - ini[0], ev.clientY - ini[1]); ini = null;
+      if (mov > 6) return;
+      const id = tomar(ev); if (id) this.alClic(id, ev);
+    });
+    el.addEventListener('pointermove', ev => {
+      if (ev.buttons) return;
+      const id = tomar(ev);
+      if (id === this.sobre) return;
+      if (this.sobre) this.nodos[this.sobre].el.classList.remove('sobre');
+      this.sobre = id;
+      if (id) this.nodos[id].el.classList.add('sobre');
+      el.style.cursor = id ? 'pointer' : 'grab';
+    });
+    el.addEventListener('pointerleave', () => { if (this.sobre) this.nodos[this.sobre].el.classList.remove('sobre'); this.sobre = null; });
+  }
+  // Aleja la camara por la diagonal de vista hasta que entran todos los nodos, con margen.
+  posicionIdeal() {
+    const dir = new THREE.Vector3(-5, 22, 31).normalize(), t = this.controles.target;
+    const cam = this.camara.clone(), p = new THREE.Vector3();
+    for (let d = 18; d < 140; d += 1.5) {
+      cam.position.copy(t).addScaledVector(dir, d); cam.lookAt(t); cam.updateMatrixWorld();
+      const entra = Object.values(this.nodos).every(n => [0, 4.6].every(h => {
+        p.copy(n.g.position).setY(h).project(cam);
+        return Math.abs(p.x) < .86 && p.y < .78 && p.y > -.86;
+      }));
+      if (entra) return cam.position.clone();
+    }
+    return t.clone().addScaledVector(dir, 70);
+  }
+  recentrar(desdeLejos) {
+    this.controles.target.set(.5, 0, 3);
+    const hasta = this.posicionIdeal();
+    const desde = desdeLejos ? hasta.clone().multiplyScalar(1.9).add(new THREE.Vector3(30, 20, 0)) : this.camara.position.clone();
+    this.camara.position.copy(desde);
+    this.vuelo = { desde, hasta, t0: performance.now(), dur: desdeLejos ? 1800 : 900 };
+  }
+  medir() {
+    const w = this.cont.clientWidth, h = this.cont.clientHeight;
+    if (!w || !h) return;
+    this.renderer.setSize(w, h); this.etiquetas.setSize(w, h);
+    this.camara.aspect = w / h; this.camara.updateProjectionMatrix();
+  }
+  activo(on) {
+    this.encendido = on;
+    if (on) { this.medir(); this.reloj.getDelta(); if (!this.yaVolo) { this.yaVolo = true; this.recentrar(true); } }
+  }
+  cuadro() {
+    if (!this.encendido) return;
+    const dt = Math.min(.05, this.reloj.getDelta()), t = this.reloj.elapsedTime;
+    if (this.vuelo) {
+      const v = this.vuelo, avance = Math.min(1, (performance.now() - v.t0) / v.dur);  // por reloj, no por cuadros
+      const e = 1 - Math.pow(1 - avance, 3);
+      this.camara.position.lerpVectors(v.desde, v.hasta, e);
+      if (avance >= 1) this.vuelo = null;
+    }
+    this.controles.update();
+    for (const k in this.rutas) { const r = this.rutas[k]; if (r.activo) r.tex.offset.x -= dt * 1.8 * r.signo; }
+    for (const id in this.nodos) {
+      const n = this.nodos[id];
+      const meta = n.foco ? .55 + .2 * Math.sin(t * 3.2) : (id === this.sobre ? .25 : 0);
+      n.halo.material.opacity += (meta - n.halo.material.opacity) * .15;
+      const s = id === this.sobre ? 1.07 : 1;
+      n.g.scale.setScalar(n.g.scale.x + (s - n.g.scale.x) * .2);
+    }
+    this.agua.material.emissiveIntensity = 1 + .35 * Math.sin(t * .7);
+    this.alGirar(this.controles.getAzimuthalAngle() * 180 / Math.PI);
+    this.renderer.render(this.scene, this.camara);
+    this.etiquetas.render(this.scene, this.camara);
+  }
+}
+
+window.Vista3D = Vista3D;
+window.dispatchEvent(new Event('vista3d-lista'));
 </script>
 </body>
 </html>
