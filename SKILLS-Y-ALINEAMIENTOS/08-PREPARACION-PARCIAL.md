@@ -15,7 +15,7 @@ compararlo con otro del trabajo.
 - **Clave:** marcar visitado **al encolar**, no al desencolar (si no, un nodo entra varias veces).
 - **Complejidad:** O(V + E): cada vértice se encola una vez y cada arista se mira una vez.
 - **Estructura:** `ArrayDeque` + `boolean[] visitado`.
-- **En el dominio:** desde CD → `CD, PAL, DS, CAB, DN, DO, AVE, QUI, MOR, SI`.
+- **En el dominio:** desde CD → `CD, CAB, PAL, DS, DO, DN, MOR, AVE, QUI, SI`.
 - **Pregunta típica:** BFS da el camino con menos rutas, no el más corto en km (a DN: 1
   ruta de 19 km vs. 2 rutas que suman 17).
 
@@ -24,7 +24,7 @@ compararlo con otro del trabajo.
 - **Idea:** ir hasta el fondo de una rama antes de volver.
 - **Clave:** recursión (la pila de llamadas es la pila); marcar al entrar.
 - **Complejidad:** O(V + E); espacio O(V) por la profundidad de la recursión.
-- **En el dominio:** desde CD → `CD, PAL, DN, SI, CAB, DS, AVE, QUI, MOR, DO`.
+- **En el dominio:** desde CD → `CD, CAB, DS, AVE, QUI, MOR, PAL, DN, SI, DO`.
 - **Conexión:** es el esqueleto del backtracking.
 
 ## Dijkstra

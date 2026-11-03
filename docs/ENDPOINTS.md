@@ -42,11 +42,12 @@ Recorrido en profundidad desde un nodo. Devuelve los ids en el orden en que se v
 
 **Respuesta:**
 ```json
-["CD","DN","SI","DS","AVE","QUI","DO","MOR","CAB","PAL"]
+["CD","CAB","DS","AVE","QUI","MOR","PAL","DN","SI","DO"]
 ```
-(El orden depende del orden en que la base devuelve las conexiones de cada nodo; lo que
-es invariante es que cada nodo aparece una sola vez y que se llega al fondo de una rama
-antes de volver: `CD → DN → SI` antes de pasar a `DS`.)
+Los vecinos de cada nodo se visitan de menor a mayor km (el `Grafo` los guarda así, sin
+importar el orden en que Neo4j devuelve las rutas). Se llega al fondo de una rama antes de
+volver: `CD → CAB → DS → AVE → QUI`, vuelve a `CAB → MOR`, después `PAL → DN → SI` y por
+último `DO`.
 
 **Complejidad:** O(V + E). Cada vértice entra a la recursión una sola vez gracias al
 arreglo de visitados, y la lista de adyacencia de cada uno se recorre una sola vez, lo que
@@ -68,10 +69,11 @@ dos rutas de distancia, etc.
 
 **Respuesta:**
 ```json
-["CD","DN","DS","DO","PAL","CAB","SI","AVE","QUI","MOR"]
+["CD","CAB","PAL","DS","DO","DN","MOR","AVE","QUI","SI"]
 ```
-Nivel 0: `CD`. Nivel 1: sus cinco destinos directos. Nivel 2: `SI` (desde DN), `AVE` y
-`QUI` (desde DS), `MOR` (desde DO o CAB).
+Nivel 0: `CD`. Nivel 1: sus cinco destinos directos, de menor a mayor km (CAB 7, PAL 9,
+DS 10, DO 18, DN 19). Nivel 2: `MOR` (desde CAB), `AVE` y `QUI` (desde DS), `SI` (desde
+DN).
 
 **Complejidad:** O(V + E). Cada vértice se encola y desencola exactamente una vez (se
 marca como visitado **al encolar**, no al desencolar, para que no entre repetido) y cada
