@@ -162,7 +162,7 @@
             background-image: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), var(--line) calc(10% - 1px) 10%); }
   .bodega.exceso { border-color: var(--coral); box-shadow: 0 0 0 3px rgba(255,95,87,.12); }
   .bulto { height: 100%; border-radius: 3px; display: flex; align-items: center; justify-content: center; flex: none;
-           font: 700 12px var(--display); letter-spacing: .05em; color: rgba(0,0,0,.75); overflow: hidden; animation: entra .25s ease-out; }
+           font: 700 12px var(--display); letter-spacing: .05em; color: rgba(0,0,0,.75); overflow: hidden; }
   .bodega-info { display: flex; justify-content: space-between; margin-top: 8px; font: 500 12px var(--mono); color: var(--muted); }
   .bodega-info .exc { color: var(--coral); }
   .paquetes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -297,6 +297,9 @@
   .km3d { font: 700 10.5px var(--mono); color: #1f2433; background: rgba(255,253,246,.92); border: 1.5px solid #1f2433;
           padding: 1px 5px; border-radius: 10px; }
   .km3d.on { background: var(--tono); }
+  .hito3d { font: 700 10.5px var(--display); letter-spacing: .12em; text-transform: uppercase; color: #1f2433; white-space: nowrap;
+            background: #ffd166; border: 1.5px solid #1f2433; border-radius: 4px; padding: 2px 6px 1px; pointer-events: none; }
+  .hito3d.agua { background: none; border: 0; color: #fff; font-style: italic; text-shadow: 0 1px 0 #2a7fb3, 0 0 5px rgba(20,90,140,.7); }
   .rio3d { font: italic 700 14px var(--body); color: #fff; letter-spacing: .3em; text-transform: uppercase; white-space: nowrap;
            text-shadow: 0 1px 0 #2a7fb3, 0 0 6px rgba(20,90,140,.6); }
   .hud.der { right: 16px; top: 14px; display: flex; gap: 6px; pointer-events: auto; }
@@ -308,6 +311,111 @@
   .icono[hidden] { display: none; }
   .seg button:hover, .icono:hover { color: var(--ink); }
   #brujula { transition: transform .1s linear; }
+
+  /* ================= tema claro "de juego" para el header, el panel y los carteles del mapa =================
+     Mismos tokens, otros valores: los componentes no cambian, cambia la paleta. Bordes de tinta y sombra
+     dura abajo, como los carteles del mapa 3D. */
+  .bar, .panel, dialog, .hud, .aviso, .cargando {
+    --bg: #f3eee3; --bg2: #fffdf8; --panel: #fffdf8; --panel2: #ffffff; --raise: #ffffff;
+    --line: #e7e1d4; --line2: #1f2433; --ink: #1f2433; --muted: #646b7e; --dim: #9aa0ae;
+    --amber-ink: #1f2433; --teal: #12a091; --coral: #e5483f;
+    --tinta: #1f2433; --sombra: 0 3px 0 #1f2433;
+    color: var(--ink);
+  }
+  .bar { background: #fffdf8; border-bottom: 2px solid var(--tinta); }
+  .marca svg rect { fill: #fff3d6; stroke: #1f2433; stroke-width: 2; }
+  .modos { background: #f3eee3; border: 2px solid var(--tinta); border-radius: 10px; padding: 3px; gap: 3px; }
+  .modos button { color: var(--muted); border-radius: 7px; border: 2px solid transparent; }
+  .modos button kbd { border-color: #c9c3b6; color: var(--muted); }
+  .modos button.on { background: var(--amber); color: var(--ink); border-color: var(--tinta); box-shadow: 0 2px 0 var(--tinta); }
+  .modos button.on kbd { border-color: var(--tinta); color: var(--ink); }
+  .estado-api { color: var(--muted); }
+  .equipo-btn { background: #fff; color: var(--ink); border: 2px solid var(--tinta); border-radius: 8px; box-shadow: var(--sombra); }
+  .equipo-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 0 var(--tinta); color: var(--ink); border-color: var(--tinta); }
+
+  .panel { background: #fbf8f1; border-left: 2px solid var(--tinta);
+           background-image: radial-gradient(#e9e3d6 1px, transparent 1px); background-size: 14px 14px; }
+  .bloque { border-bottom: 2px dashed #e1dacb; }
+  .titulo { color: var(--ink); }
+  .k { color: var(--muted); }
+  .sub { color: #4f566a; }
+  .chapa { border: 2px solid var(--tinta); box-shadow: 0 2px 0 var(--tinta); color: var(--ink); }
+  .chapa.a { background: var(--amber); border-color: var(--tinta); color: var(--ink); }
+  .chapa.b { background: #ff8a80; border-color: var(--tinta); color: var(--ink); }
+  .trayecto .linea { background: repeating-linear-gradient(90deg, var(--tinta) 0 6px, transparent 6px 11px); opacity: .5; }
+
+  .stats, .resumen-lab { background: var(--tinta); border: 2px solid var(--tinta); gap: 2px; border-radius: 12px; box-shadow: var(--sombra); }
+  .stats > div, .resumen-lab > div { background: #fff; }
+  .stats .v, .resumen-lab .v { color: var(--ink); }
+
+  .btn { border: 2px solid var(--tinta); background: #fff; color: var(--ink); border-radius: 9px; box-shadow: var(--sombra);
+         transition: transform .08s, box-shadow .08s; }
+  .btn:hover { border-color: var(--tinta); transform: translateY(-1px); box-shadow: 0 4px 0 var(--tinta); }
+  .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--tinta); }
+  .btn.pri { background: var(--amber); border-color: var(--tinta); color: var(--ink); }
+  .btn.pri:hover { filter: none; background: #ffc266; }
+  .btn:disabled { opacity: .45; transform: none; box-shadow: var(--sombra); }
+
+  .salida { background: #fff; border: 2px solid var(--tinta); border-radius: 8px; box-shadow: 0 2px 0 var(--tinta); }
+  .salida:hover { background: #fff3d6; border-color: var(--tinta); transform: translateY(-1px); }
+  .salida span { color: var(--muted); }
+
+  .pasos li { color: #4f566a; }
+  .pasos li::before { background: var(--amber); border: 2px solid var(--tinta); color: var(--ink); width: 24px; height: 24px; }
+  .pasos b { color: var(--ink); }
+  .bitacora { background: var(--tinta); border: 2px solid var(--tinta); gap: 2px; border-radius: 10px; }
+  .bitacora li { background: #fff; }
+  .bitacora .mini i { background: #e1dacb; }
+  .bitacora .mini i.on { background: var(--amber); box-shadow: 0 0 0 1px var(--tinta); }
+
+  .veredicto .titulo.ok { color: #d68a00; }
+  .estrellas svg path[stroke="#2b3646"] { stroke: #cfc8b8; }
+  .pista { background: #efe9dc; border: 1.5px solid var(--tinta); height: 12px; border-radius: 6px; }
+  .fila-comp .det { color: var(--muted); }
+  .pie { border-top: 2px solid var(--tinta); background: #fffdf8; color: var(--muted); }
+
+  .stepper { border: 2px solid var(--tinta); border-radius: 9px; box-shadow: var(--sombra); }
+  .stepper button { background: #fff3d6; color: var(--ink); }
+  .stepper button:hover { background: var(--amber); }
+  .stepper output { background: #fff; color: var(--ink); align-self: stretch; display: grid; place-items: center; }
+  .bodega { background-color: #f3eee3; border: 2px solid var(--tinta); border-radius: 10px;
+            background-image: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), #dcd5c6 calc(10% - 1px) 10%); }
+  .bulto { border: 1.5px solid var(--tinta); color: var(--ink); }
+  .paq { background: #fff; border: 2px solid var(--tinta); border-radius: 10px; box-shadow: var(--sombra); transition: transform .08s; }
+  .paq:hover { border-color: var(--tinta); transform: translateY(-1px); }
+  .paq.on { background: #fff3d6; border-color: var(--tinta); }
+  .paq .tag { border: 1.5px solid var(--tinta); color: var(--ink); }
+  .paq .check { border: 2px solid var(--tinta); }
+  .paq .ratio { background: #efe9dc; }
+
+  .algo { border: 2px solid transparent; }
+  .algo:hover { background: #fff; border-color: #e1dacb; }
+  .algo.on { background: #fff; border-color: var(--tinta); box-shadow: inset 4px 0 0 var(--amber), 0 3px 0 var(--tinta); }
+  .algo code { color: #0f7f73; background: #e3f6f3; border-radius: 4px; padding: 2px 5px; }
+  .campo select, .campo input { background-color: #fff; border: 2px solid var(--tinta); border-radius: 8px; color: var(--ink); }
+  .campo select:focus, .campo input:focus { border-color: var(--tinta); box-shadow: 0 0 0 3px rgba(255,181,71,.6); }
+  /* la consola queda oscura, como una terminal */
+  .consola { background: #1f2433; border: 2px solid var(--tinta); color: #e8edf3; box-shadow: var(--sombra); }
+  .consola .n { color: #7d8597; } .consola .t { color: #e8edf3; } .consola .t em { color: #5fe0cf; } .consola .t.dest { color: #ffc266; }
+  .consola .ruta:hover, .consola .ruta.on { background: #2c3346; }
+
+  .hud.izq, .hud.sup, .seg, .icono { background: rgba(255,253,248,.95); border: 2px solid var(--tinta); box-shadow: var(--sombra);
+                                     backdrop-filter: none; -webkit-backdrop-filter: none; color: var(--ink); }
+  .hud.izq { color: #4f566a; }
+  .hud.sup .meta b { color: var(--ink); } .hud.sup .meta span { color: var(--muted); }
+  #brujula circle { fill: #fff3d6; stroke: #1f2433; stroke-width: 1.5; }
+  .seg button { color: var(--muted); }
+  .seg button.on { background: var(--amber); color: var(--ink); box-shadow: none; }
+  .icono { color: var(--ink); }
+  .aviso { background: #fff; border: 2px solid var(--tinta); border-left: 6px solid var(--coral); box-shadow: var(--sombra); color: var(--ink); }
+  .cargando { background: #fbf8f1; }
+  .cargando .giro { border-color: #e1dacb; border-top-color: var(--amber); }
+
+  dialog { background: #fffdf8; border: 2px solid var(--tinta); box-shadow: 0 6px 0 var(--tinta), 0 30px 80px rgba(0,0,0,.35); }
+  .integrantes { background: var(--tinta); border: 2px solid var(--tinta); gap: 2px; border-radius: 10px; }
+  .integrantes li { background: #fff; }
+  .integrantes a { color: #0f7f73; }
+  .cerrar { color: var(--ink); }
 
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
@@ -328,7 +436,7 @@
     .stats { grid-template-columns: repeat(2, 1fr); }
     .hud.izq { gap: 6px 12px; left: 10px; right: 10px; bottom: 10px; font-size: 11px; }
     .hud.sup { display: none; }
-    .km3d, .lbl3d span { display: none; }  /* en el celular solo los ids: si no, se tapan */
+    .km3d, .lbl3d span, .hito3d { display: none; }  /* en el celular solo los ids: si no, se tapan */
     .lbl3d b { font-size: 11px; padding: 3px 6px 2px; }
     .equipo-btn { display: none; }
   }
@@ -1210,6 +1318,19 @@ const COSTA = (() => {
   p.bezierCurveTo(350, 70, 390, 120, 470, 190); p.bezierCurveTo(550, 260, 600, 300, 680, 352); p.lineTo(2400, 1500);
   return p.getPoints(40);
 })();
+// Lugares del AMBA en coordenadas del mapa 2D.
+const RIACHUELO = [[650, 286], [585, 318], [530, 352], [470, 372], [410, 384], [350, 398], [290, 410], [220, 425], [150, 440], [80, 458], [-80, 486]];
+const LAGUNA = { c: [150, 95], r: 46 };
+const OBELISCO = [432, 216], CAMINITO = [532, 320];
+const BARCOS = [[560, 110], [640, 205], [470, 50], [700, 300]];
+TEX.bandera = () => lienzo(128, 84, (x, w, h) => {
+  x.fillStyle = '#74acdf'; x.fillRect(0, 0, w, h);
+  x.fillStyle = '#ffffff'; x.fillRect(0, h / 3, w, h / 3);
+  x.fillStyle = '#f6b40e'; x.strokeStyle = '#f6b40e'; x.lineWidth = 2;
+  for (let i = 0; i < 16; i++) { const a = i * Math.PI / 8; x.beginPath(); x.moveTo(64 + Math.cos(a) * 6, 42 + Math.sin(a) * 6); x.lineTo(64 + Math.cos(a) * 12, 42 + Math.sin(a) * 12); x.stroke(); }
+  x.beginPath(); x.arc(64, 42, 6, 0, 7); x.fill();
+  x.strokeStyle = '#85340a'; x.lineWidth = 1; x.stroke();
+});
 function esTierra(xs, ys, margen = 0) {
   if (xs < COSTA[0].x) return true;
   for (let i = 1; i < COSTA.length; i++) {
@@ -1248,7 +1369,8 @@ class Vista3D {
     Object.assign(sol.shadow.camera, { left: -45, right: 45, top: 45, bottom: -45, near: 1, far: 140 });
     s.add(sol);
 
-    this.suelo(); this.rio(); this.construir(); this.arboles();
+    this.banderas = []; this.barcos = []; this.reservados = [];
+    this.suelo(); this.rio(); this.riachuelo(); this.laguna(); this.hitos(); this.construir(); this.puentes(); this.arboles();
     this.raycaster = new THREE.Raycaster(); this.puntero = new THREE.Vector2();
     this.eventos();
     new ResizeObserver(() => this.medir()).observe(cont);
@@ -1277,6 +1399,169 @@ class Vista3D {
     const lbl = new CSS2DObject(el); lbl.position.copy(a3([560, 110])); this.scene.add(lbl);
   }
 
+  // Riachuelo: separa Capital de Avellaneda y Lanus. Las rutas que lo cruzan llevan puente.
+  riachuelo() {
+    this.cursoRiachuelo = new THREE.CatmullRomCurve3(RIACHUELO.map(q => a3(q)));
+    const orilla = new THREE.Mesh(new THREE.TubeGeometry(this.cursoRiachuelo, 200, 1.5, 8), toon('#b9a77c'));
+    orilla.scale.y = .05; orilla.position.y = .03; orilla.receiveShadow = true; this.scene.add(orilla);
+    this.texRiachuelo = TEX.agua(); this.texRiachuelo.repeat.set(40, 1);
+    const agua = new THREE.Mesh(new THREE.TubeGeometry(this.cursoRiachuelo, 200, 1.15, 8), toon('#8fd0f0', { map: this.texRiachuelo }));
+    agua.scale.y = .05; agua.position.y = .055; this.scene.add(agua);
+    this.puntosRiachuelo = this.cursoRiachuelo.getPoints(240);
+    this.hito('Riachuelo', a3([260, 432]), 'agua');
+  }
+  laguna() {
+    const [cx, cz] = a3(LAGUNA.c).toArray().filter((_, i) => i !== 1), R = LAGUNA.r / ESC;
+    this.lagunaCentro = new THREE.Vector2(cx, cz); this.lagunaRadio = R;
+    const forma = k => {
+      const f = new THREE.Shape();
+      for (let i = 0; i <= 48; i++) {
+        const a = i / 48 * Math.PI * 2, rr = R * k * (1 + .14 * Math.sin(3 * a) + .07 * Math.cos(5 * a));
+        const px = cx + Math.cos(a) * rr * 1.25, pz = cz + Math.sin(a) * rr;
+        i ? f.lineTo(px, -pz) : f.moveTo(px, -pz);
+      }
+      return f;
+    };
+    const arena = new THREE.Mesh(new THREE.ShapeGeometry(forma(1.18)), toon('#efd99a'));
+    arena.rotation.x = -Math.PI / 2; arena.position.y = .03; arena.receiveShadow = true; this.scene.add(arena);
+    const tex = TEX.agua(); tex.repeat.set(1.5, 1.5); this.texLaguna = tex;
+    const agua = new THREE.Mesh(new THREE.ShapeGeometry(forma(1)), toon('#ffffff', { map: tex }));
+    agua.rotation.x = -Math.PI / 2; agua.position.y = .06; this.scene.add(agua);
+    // juncos y un muellecito
+    const r = azar(5);
+    for (let i = 0; i < 26; i++) {
+      const a = r() * Math.PI * 2, d = R * (1.02 + r() * .12);
+      const junco = new THREE.Mesh(new THREE.CylinderGeometry(.04, .06, .7 + r() * .6, 5), toon(r() < .5 ? '#5d9b3a' : '#7bb24a'));
+      junco.position.set(cx + Math.cos(a) * d * 1.25, .4, cz + Math.sin(a) * d); junco.rotation.z = (r() - .5) * .4;
+      this.scene.add(junco);
+    }
+    const muelle = new THREE.Mesh(new THREE.BoxGeometry(.7, .12, 2.2), toon('#a8784a'));
+    muelle.position.set(cx + .4, .22, cz + R * .9); muelle.castShadow = true; this.scene.add(contorno(muelle, .04));
+    this.barco(new THREE.Vector3(cx - .8, 0, cz - .3), .7, '#e94f37');
+    this.hito('Laguna', new THREE.Vector3(cx, 0, cz - R - .4), 'agua');
+  }
+  hito(texto, pos, tipo = '') {
+    const el = document.createElement('div'); el.className = 'hito3d ' + tipo; el.textContent = texto;
+    const lbl = new CSS2DObject(el); lbl.position.copy(pos); this.scene.add(lbl);
+  }
+  bandera(padre, x, z, alto, escala = 1) {
+    const g = new THREE.Group(); g.position.set(x, 0, z); padre.add(g);
+    const mastil = new THREE.Mesh(new THREE.CylinderGeometry(.05 * escala, .07 * escala, alto, 8), toon('#e8e8e8'));
+    mastil.position.y = alto / 2; mastil.castShadow = true; g.add(contorno(mastil, .03));
+    const punta = new THREE.Mesh(new THREE.SphereGeometry(.09 * escala, 10, 8), toon('#f6b40e'));
+    punta.position.y = alto + .05; g.add(punta);
+    const w = 1.3 * escala, h = .85 * escala;
+    const geo = new THREE.PlaneGeometry(w, h, 14, 4); geo.translate(w / 2, 0, 0);
+    const tela = new THREE.Mesh(geo, toon('#ffffff', { map: this.texBandera || (this.texBandera = TEX.bandera()), side: THREE.DoubleSide }));
+    tela.position.set(.05, alto - h / 2 - .05, 0); tela.castShadow = true; g.add(tela);
+    this.banderas.push({ geo, base: geo.attributes.position.array.slice(), w, fase: Math.random() * 6 });
+    return g;
+  }
+  barco(pos, escala = 1, color = '#ffffff') {
+    const g = new THREE.Group(); g.position.copy(pos); g.scale.setScalar(escala); this.scene.add(g);
+    const casco = new THREE.Mesh(new THREE.BoxGeometry(1.6, .38, .62), toon(color));
+    casco.position.y = .2; casco.castShadow = true; g.add(contorno(casco, .04));
+    const mastil = new THREE.Mesh(new THREE.CylinderGeometry(.04, .04, 1.9, 6), toon('#8a5a36'));
+    mastil.position.set(.1, 1.3, 0); g.add(mastil);
+    const tri = new THREE.Shape(); tri.moveTo(0, 0); tri.lineTo(1.1, 0); tri.lineTo(0, 1.6); tri.closePath();
+    const vela = new THREE.Mesh(new THREE.ShapeGeometry(tri), toon('#fffdf6', { side: THREE.DoubleSide }));
+    vela.position.set(.14, .5, 0); vela.castShadow = true; g.add(vela);
+    this.barcos.push({ g, base: pos.clone(), fase: Math.random() * 6 });
+  }
+  // Obelisco, Caminito, el Puente Transbordador y veleros en el rio.
+  hitos() {
+    const ob = new THREE.Group(); ob.position.copy(a3(OBELISCO)); this.scene.add(ob);
+    const plaza = new THREE.Mesh(new THREE.CylinderGeometry(2.3, 2.4, .18, 40), toon('#d9d3c3'));
+    plaza.position.y = .09; plaza.receiveShadow = true; ob.add(contorno(plaza, .04));
+    const cesped = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.6, .2, 40), toon('#8fd07a'));
+    cesped.position.y = .12; ob.add(cesped);
+    const zocalo = new THREE.Mesh(new THREE.BoxGeometry(1.1, .4, 1.1), toon('#e9e4d6'));
+    zocalo.position.y = .38; zocalo.castShadow = true; ob.add(contorno(zocalo, .04));
+    const fuste = new THREE.Mesh(new THREE.CylinderGeometry(.3, .5, 6.4, 4), toon('#f7f3e9'));
+    fuste.rotation.y = Math.PI / 4; fuste.position.y = 3.78; fuste.castShadow = true; ob.add(contorno(fuste, .05));
+    const punta = new THREE.Mesh(new THREE.ConeGeometry(.3, .75, 4), toon('#f7f3e9'));
+    punta.rotation.y = Math.PI / 4; punta.position.y = 7.36; punta.castShadow = true; ob.add(contorno(punta, .04));
+    const ventana = new THREE.Mesh(new THREE.BoxGeometry(.14, .2, .02), toon('#3a4458'));
+    ventana.position.set(0, 6.6, .32); ob.add(ventana);
+    this.bandera(ob, 1.7, 1.1, 3.4, 1.15);
+    this.hito('Obelisco', new THREE.Vector3(0, 8.4, 0).add(ob.position));
+    this.reservados.push([ob.position, 3]);
+
+    // Caminito: casitas de chapa de colores, alineadas con el Riachuelo.
+    const cam = new THREE.Group(); cam.position.copy(a3(CAMINITO)); this.scene.add(cam);
+    const d = a3(RIACHUELO[1]).sub(a3(RIACHUELO[3])); cam.rotation.y = -Math.atan2(d.z, d.x);
+    const colores = ['#e94f37', '#f6c445', '#3a86ff', '#2ec4b6', '#ff8fab', '#8ac926'], r = azar(9);
+    colores.forEach((col, i) => {
+      const alto = .9 + r() * .6;
+      const casa = new THREE.Mesh(new THREE.BoxGeometry(.95, alto, .85), toon(col, { map: this.tex.chapa }));
+      casa.position.set((i - 2.5) * 1.02, alto / 2 + .02, 0); casa.castShadow = casa.receiveShadow = true; cam.add(contorno(casa, .04));
+      const techo = new THREE.Mesh(new THREE.BoxGeometry(1.02, .1, .95), toon(colores[(i + 2) % 6]));
+      techo.position.set((i - 2.5) * 1.02, alto + .07, 0); cam.add(techo);
+      const ventana = new THREE.Mesh(new THREE.BoxGeometry(.3, .28, .03), toon('#fffdf6'));
+      ventana.position.set((i - 2.5) * 1.02, alto * .6, .44); cam.add(ventana);
+    });
+    this.hito('Caminito', new THREE.Vector3(0, 2.2, 0).add(cam.position));
+    this.reservados.push([cam.position, 4.2]);
+
+    // Puente Transbordador Nicolas Avellaneda, sobre la boca del Riachuelo.
+    const tr = new THREE.Group(); tr.position.copy(a3([598, 311])); this.scene.add(tr);
+    const dr = a3(RIACHUELO[0]).sub(a3(RIACHUELO[2])); tr.rotation.y = -Math.atan2(dr.z, dr.x) + Math.PI / 2;
+    const rojo = toon('#c8432f');
+    for (const x of [-2.1, 2.1]) for (const z of [-.45, .45]) {
+      const pata = new THREE.Mesh(new THREE.BoxGeometry(.22, 5.2, .22), rojo);
+      pata.position.set(x, 2.6, z); pata.castShadow = true; tr.add(contorno(pata, .03));
+    }
+    const viga = new THREE.Mesh(new THREE.BoxGeometry(5.4, .45, 1.15), rojo);
+    viga.position.y = 5.2; viga.castShadow = true; tr.add(contorno(viga, .04));
+    const barquilla = new THREE.Mesh(new THREE.BoxGeometry(1.3, .3, 1), toon('#3a4458'));
+    barquilla.position.y = .55; barquilla.castShadow = true; tr.add(contorno(barquilla, .03));
+    for (const x of [-.5, .5]) {
+      const cable = new THREE.Mesh(new THREE.CylinderGeometry(.025, .025, 4.5, 4), toon('#2a2f3a'));
+      cable.position.set(x, 2.95, 0); tr.add(cable);
+    }
+    this.hito('Puente Transbordador', new THREE.Vector3(0, 6.3, 0).add(tr.position));
+    this.reservados.push([tr.position, 3.2]);
+
+    BARCOS.forEach((b, i) => this.barco(a3(b), 1, ['#ffffff', '#e94f37', '#f6c445', '#3a86ff'][i % 4]));
+  }
+  // Puente en cada cruce de una ruta con el Riachuelo.
+  puentes() {
+    const pts = this.puntosRiachuelo, corte = (p1, p2, p3, p4) => {
+      const d = (p2.x - p1.x) * (p4.z - p3.z) - (p2.z - p1.z) * (p4.x - p3.x);
+      if (!d) return null;
+      const t = ((p3.x - p1.x) * (p4.z - p3.z) - (p3.z - p1.z) * (p4.x - p3.x)) / d;
+      const u = ((p3.x - p1.x) * (p2.z - p1.z) - (p3.z - p1.z) * (p2.x - p1.x)) / d;
+      return t >= 0 && t <= 1 && u >= 0 && u <= 1 ? new THREE.Vector3(p1.x + t * (p2.x - p1.x), 0, p1.z + t * (p2.z - p1.z)) : null;
+    };
+    const rojo = toon('#d9553f'), gris = toon('#5d6577', { map: this.tex.asfalto });
+    for (const ru of Object.values(this.rutas)) {
+      for (let i = 1; i < pts.length; i++) {
+        const P = corte(ru.A, ru.B, pts[i - 1], pts[i]); if (!P) continue;
+        const g = new THREE.Group(); g.position.copy(P);
+        const dir = ru.B.clone().sub(ru.A); g.rotation.y = -Math.atan2(dir.z, dir.x); this.scene.add(g);
+        const tablero = new THREE.Mesh(new THREE.BoxGeometry(3.6, .2, 1.4), gris);
+        tablero.position.y = .26; tablero.castShadow = tablero.receiveShadow = true; g.add(contorno(tablero, .04));
+        for (const z of [-.68, .68]) {
+          const baranda = new THREE.Mesh(new THREE.BoxGeometry(3.6, .1, .08), rojo);
+          baranda.position.set(0, .62, z); g.add(baranda);
+          const arco = new THREE.Mesh(new THREE.TorusGeometry(1.75, .1, 6, 28, Math.PI), rojo);
+          arco.position.set(0, .3, z); arco.castShadow = true; g.add(arco);
+          for (const x of [-1.2, -.4, .4, 1.2]) {
+            const tensor = new THREE.Mesh(new THREE.BoxGeometry(.06, 1, .06), rojo);
+            tensor.position.set(x, .3 + Math.sqrt(Math.max(0, 1.75 ** 2 - x * x)) / 2, z); tensor.scale.y = Math.sqrt(Math.max(0, 1.75 ** 2 - x * x)); g.add(tensor);
+          }
+        }
+        this.reservados.push([P, 2.4]);
+        break;
+      }
+    }
+  }
+  libre(x, z) {
+    for (const p of this.puntosRiachuelo) if (Math.hypot(x - p.x, z - p.z) < 2.4) return false;
+    if (Math.hypot((x - this.lagunaCentro.x) / 1.25, z - this.lagunaCentro.y) < this.lagunaRadio * 1.35) return false;
+    for (const [p, r] of this.reservados) if (Math.hypot(x - p.x, z - p.z) < r) return false;
+    return true;
+  }
   galpon(g, color) {
     const paredes = new THREE.Mesh(new THREE.BoxGeometry(2.7, 1.6, 2.1), toon(color, { map: this.tex.chapa }));
     paredes.position.y = 1.06; paredes.castShadow = paredes.receiveShadow = true; g.add(contorno(paredes));
@@ -1290,6 +1575,7 @@ class Vista3D {
     }
     const cartel = new THREE.Mesh(new THREE.BoxGeometry(1.3, .36, .06), toon('#ffd166'));
     cartel.position.set(0, 1.55, 1.08); g.add(contorno(cartel, .04));
+    this.bandera(g, 1.55, -1.15, 3.1, .8);
     return 2.8;
   }
   deposito(g, color) {
@@ -1374,7 +1660,7 @@ class Vista3D {
     for (let x = -46; x <= 52; x += 2.6) for (let z = -34; z <= 40; z += 2.6) {
       if (r() < .74) continue;
       const px = x + (r() - .5) * 2, pz = z + (r() - .5) * 2;
-      if (!esTierra(px * ESC + CX, pz * ESC + CZ, 20) || !lejosDe(px, pz)) continue;
+      if (!esTierra(px * ESC + CX, pz * ESC + CZ, 20) || !lejosDe(px, pz) || !this.libre(px, pz)) continue;
       puestos.push([px, pz, .55 + r() * .45, r()]);
     }
     const n = puestos.length, m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
@@ -1520,6 +1806,19 @@ class Vista3D {
     }
     this.controles.update();
     this.texAgua.offset.set(t * .012, t * .02);
+    this.texRiachuelo.offset.x = -t * .05; this.texLaguna.offset.set(t * .01, t * .006);
+    for (const b of this.banderas) {
+      const pos = b.geo.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        const x = b.base[i * 3];
+        pos.setZ(i, Math.sin(x * 3.2 - t * 6 + b.fase) * .11 * (x / b.w));
+      }
+      pos.needsUpdate = true;
+    }
+    for (const b of this.barcos) {
+      b.g.position.set(b.base.x + Math.sin(t * .15 + b.fase) * 1.5, Math.sin(t * 1.6 + b.fase) * .06, b.base.z + Math.cos(t * .12 + b.fase) * .8);
+      b.g.rotation.z = Math.sin(t * 1.3 + b.fase) * .05;
+    }
     for (const k in this.rutas) { const r = this.rutas[k]; if (r.activo) r.tex.offset.x -= dt * 1.8 * r.signo; }
     for (const id in this.nodos) {
       const n = this.nodos[id];
