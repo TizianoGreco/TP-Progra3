@@ -301,7 +301,10 @@ inalcanzable, pesos negativos, origen inexistente, grafo no conexo).
 |---|---:|---|
 | `GrafoTest` | 4 | estructura del grafo, matriz de adyacencia, grafo no dirigido |
 | `RecorridosTest` | 6 | BFS y DFS: orden, no repetición, nodos sin salida, errores |
-| `CaminosMinimosTest` | 7 | Dijkstra y UCS: caminos indirectos, reconstrucción, inalcanzables, pesos negativos |
+| `CaminosMinimosTest` | 11 | Dijkstra, UCS y Floyd-Warshall: caminos indirectos, reconstrucción, inalcanzables, pesos y ciclos negativos, Floyd vs. Dijkstra |
+| `SeleccionTest` | 5 | Mochila 0/1: 95 USD contra 78 del greedy, capacidad cero, ítem que no entra, errores |
+| `BacktrackingTest` | 6 | rutas simples: las 8 de CD a QUI, poda por costo (límite inclusivo) y por saltos, sin camino, errores |
+| `RamificacionYPodaTest` | 5 | reparto en 2, 3 y 4 vehículos (cota, 12 kg, 9 kg), errores, entrada sin modificar |
 
 ## 9. Documentación complementaria
 

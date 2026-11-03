@@ -4,7 +4,7 @@
 |---|---|---|---|
 | 1 — Tiziano Greco | Grafos y configuración | 3 | Spring Boot + Neo4j, carga del grafo, BFS, DFS, Dijkstra (+ UCS opcional) |
 | 2 — _(completar)_ | Ordenamiento y expansión mínima | 4 | QuickSort, MergeSort, Prim, Kruskal, Greedy |
-| 3 — _(completar)_ | Optimización y búsqueda | 3 | Mochila 0/1, Floyd-Warshall, Backtracking, Branch & Bound + consolidar README y docs |
+| 3 — Nicolas Cortese | Optimización y búsqueda | 3 | Mochila 0/1, Floyd-Warshall, Backtracking, Branch & Bound + consolidar README y docs |
 
 > Repartirse los algoritmos **para programar** está bien. Repartirse los algoritmos
 > **para estudiar**, no: en el Segundo Parcial cada uno codifica cualquiera de los doce.
@@ -91,7 +91,9 @@ porque Kruskal y Greedy lo usan para ordenar.
 
 ---
 
-## Persona 3 — Optimización y búsqueda (3 puntos)
+## Persona 3 — Nicolas Cortese — Optimización y búsqueda (3 puntos) ✅
+
+Hecho y en `main` (PR #3, 30/10).
 
 **Orden sugerido:** Mochila 0/1 → Floyd-Warshall → Backtracking → Branch & Bound →
 consolidar docs. Branch & Bound es backtracking más una cota: hacerlo después.
