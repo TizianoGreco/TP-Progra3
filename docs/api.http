@@ -3,6 +3,9 @@
 ### Verificar conexion y datos   (esperado: 10 vertices, 15 aristas)
 GET http://localhost:8080/api/grafo/resumen
 
+### Red para la pagina visual   (esperado: 10 nodos, 15 rutas)
+GET http://localhost:8080/api/grafo/red
+
 ### Recorridos    (esperado: BFS CD CAB PAL DS DO DN MOR AVE QUI SI; DFS CD CAB DS AVE QUI MOR PAL DN SI DO)
 GET http://localhost:8080/api/grafo/dfs?origen=CD
 GET http://localhost:8080/api/grafo/bfs?origen=CD
