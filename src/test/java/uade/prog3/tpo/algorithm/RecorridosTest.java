@@ -15,9 +15,10 @@ class RecorridosTest {
     void bfsVisitaPorNivelesDesdeElCentro() {
         Grafo g = GrafoDePrueba.redLogistica(true);
         List<String> orden = recorridos.bfs(g, "CD");
-        // nivel 0: CD; nivel 1: sus 5 vecinos directos en orden de adyacencia;
-        // nivel 2: AVE y QUI (desde DS), MOR (desde CAB), SI (desde DN)
-        assertEquals(List.of("CD", "PAL", "DS", "CAB", "DN", "DO", "AVE", "QUI", "MOR", "SI"), orden);
+        // vecinos ordenados por km: CD -> CAB 7, PAL 9, DS 10, DO 18, DN 19
+        // nivel 0: CD; nivel 1: CAB PAL DS DO DN;
+        // nivel 2: MOR (desde CAB), AVE y QUI (desde DS), SI (desde DN)
+        assertEquals(List.of("CD", "CAB", "PAL", "DS", "DO", "DN", "MOR", "AVE", "QUI", "SI"), orden);
     }
 
     @Test
@@ -38,8 +39,9 @@ class RecorridosTest {
     void dfsProfundizaAntesDeVolver() {
         Grafo g = GrafoDePrueba.redLogistica(true);
         List<String> orden = recorridos.dfs(g, "CD");
-        // CD -> PAL -> DN -> SI (fondo), vuelve a PAL -> CAB -> DS -> AVE -> QUI, ...
-        assertEquals(List.of("CD", "PAL", "DN", "SI", "CAB", "DS", "AVE", "QUI", "MOR", "DO"), orden);
+        // CD -> CAB (7) -> DS (11) -> AVE (5) -> QUI (fondo); vuelve a CAB -> MOR;
+        // vuelve a CD -> PAL (9) -> DN (8) -> SI; vuelve a CD -> DO (18)
+        assertEquals(List.of("CD", "CAB", "DS", "AVE", "QUI", "MOR", "PAL", "DN", "SI", "DO"), orden);
     }
 
     @Test
@@ -51,6 +53,29 @@ class RecorridosTest {
         assertEquals(10, bfs.size());
         assertTrue(dfs.containsAll(bfs));
         assertNotEquals(dfs, bfs);
+    }
+
+    @Test
+    void elRecorridoNoDependeDelOrdenEnQueLlegaronLasRutas() {
+        // Neo4j no garantiza el orden de las relaciones: el mismo grafo cargado
+        // con las rutas al reves tiene que recorrerse igual
+        Grafo alReves = new Grafo(true);
+        for (String id : GrafoDePrueba.redLogistica(true).ids()) {
+            alReves.agregarVertice(id);
+        }
+        List<String[]> rutas = new java.util.ArrayList<>();
+        Grafo original = GrafoDePrueba.redLogistica(true);
+        for (int u = 0; u < original.cantidadVertices(); u++) {
+            for (Grafo.Arista a : original.vecinos(u)) {
+                rutas.add(new String[] {original.idDe(u), original.idDe(a.destino()), String.valueOf(a.costo())});
+            }
+        }
+        for (int i = rutas.size() - 1; i >= 0; i--) {
+            alReves.agregarArista(rutas.get(i)[0], rutas.get(i)[1], Double.parseDouble(rutas.get(i)[2]));
+        }
+
+        assertEquals(recorridos.bfs(original, "CD"), recorridos.bfs(alReves, "CD"));
+        assertEquals(recorridos.dfs(original, "CD"), recorridos.dfs(alReves, "CD"));
     }
 
     @Test

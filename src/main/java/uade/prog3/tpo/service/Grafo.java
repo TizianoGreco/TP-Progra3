@@ -48,10 +48,31 @@ public class Grafo {
     public void agregarArista(String origenId, String destinoId, double costo) {
         int u = agregarVertice(origenId);
         int v = agregarVertice(destinoId);
-        adyacencia.get(u).add(new Arista(v, costo));
+        insertarOrdenada(adyacencia.get(u), new Arista(v, costo));
         if (!dirigido) {
-            adyacencia.get(v).add(new Arista(u, costo));
+            insertarOrdenada(adyacencia.get(v), new Arista(u, costo));
         }
+    }
+
+    /**
+     * Mantiene cada lista de vecinos ordenada por costo y, ante empate, por id
+     * del destino. Neo4j no garantiza el orden en que devuelve las relaciones:
+     * sin este orden fijo, BFS y DFS darian un recorrido distinto segun la base.
+     * Insercion directa, O(grado) por arista.
+     */
+    private void insertarOrdenada(List<Arista> vecinos, Arista nueva) {
+        int i = vecinos.size();
+        while (i > 0 && vaDespues(vecinos.get(i - 1), nueva)) {
+            i--;
+        }
+        vecinos.add(i, nueva);
+    }
+
+    private boolean vaDespues(Arista a, Arista b) {
+        if (a.costo() != b.costo()) {
+            return a.costo() > b.costo();
+        }
+        return ids.get(a.destino()).compareTo(ids.get(b.destino())) > 0;
     }
 
     public int cantidadVertices() {
