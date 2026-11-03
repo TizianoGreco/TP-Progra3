@@ -672,10 +672,38 @@ const guardado = {
 };
 
 async function api(url) {
+  if (await enDemo()) return desdeDemo(url);
   const r = await fetch(url);
   const cuerpo = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(cuerpo.detalle || ('Error ' + r.status));
   return cuerpo;
+}
+
+// Modo demo (la version publicada en Vercel, sin backend): las respuestas salen de datos/, que
+// genero el backend Java con scripts/generar_demo.py. Se usa solo si la API no responde y existe datos/.
+let demo = null;
+const enDemo = () => demo || (demo = (async () => {
+  try { const r = await fetch('/api/grafo/resumen'); if (r.ok && (r.headers.get('content-type') || '').includes('json')) return false; } catch (e) { /* sin API */ }
+  try { return (await fetch('datos/red.json', { method: 'HEAD' })).ok; } catch (e) { return false; }
+})());
+async function desdeDemo(url) {
+  const u = new URL(url, location.href), p = Object.fromEntries(u.searchParams), alg = u.pathname.split('/').pop();
+  let archivo, elegir = d => d;
+  if (alg === 'red') archivo = 'red';
+  else if (alg === 'mergesort') archivo = 'paquetes';
+  else if (alg === 'kruskal') archivo = 'kruskal';
+  else if (['bfs', 'dfs', 'prim'].includes(alg)) archivo = `${alg}/${p.origen}`;
+  else if (['dijkstra', 'ucs'].includes(alg)) archivo = `${alg}/${p.origen}-${p.destino}`;
+  else if (['greedy', 'dinamica'].includes(alg)) archivo = `${alg}/${Math.round(Number(p.capacidad))}`;
+  else if (alg === 'rutas') {  // una respuesta por cada tope entero de km
+    archivo = `rutas/${p.origen}-${p.destino}`;
+    elegir = d => d[Math.max(0, Math.min(d.length - 1, Math.floor(Number(p.costoMaximo))))];
+  }
+  const r = archivo && await fetch(`datos/${archivo}.json`);
+  if (!r || !r.ok) throw new Error('Esa consulta no está en la demo');
+  const { status, body } = elegir(await r.json());
+  if (status >= 400) throw new Error(body.detalle || ('Error ' + status));
+  return body;
 }
 let avisoTimer;
 function avisar(msg) {
@@ -1218,7 +1246,9 @@ $('reintentar').addEventListener('click', () => location.reload());
   try {
     [red, paquetes] = await Promise.all([api('/api/grafo/red'), api('/api/seleccion/mergesort?criterio=peso')]);
     est.className = 'estado-api ok';
-    est.querySelector('span').textContent = `API en línea · ${red.nodos.length} nodos · ${red.rutas.length} rutas`;
+    est.querySelector('span').textContent = (await enDemo())
+      ? `Demo · respuestas del backend Java · ${red.nodos.length} nodos`
+      : `API en línea · ${red.nodos.length} nodos · ${red.rutas.length} rutas`;
   } catch (e) {
     est.className = 'estado-api mal';
     est.querySelector('span').textContent = 'API sin conexión';

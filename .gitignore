@@ -21,3 +21,7 @@ application-local.properties
 
 ### macOS ###
 .DS_Store
+
+### Demo estatica (scripts/generar_demo.py) y Vercel ###
+demo/
+.vercel/
