@@ -41,8 +41,8 @@ si la regla está mal).
 | Persona | Bloque | Estado |
 |---|---|---|
 | 1 — Tiziano Greco | Grafos y configuración | hecho y mergeado en `main` (17 tests) |
-| 2 — _(completar)_ | Ordenamiento y expansión mínima | stubs listos, falta implementar |
-| 3 — _(completar)_ | Optimización y búsqueda | stubs listos, falta implementar |
+| 2 — Juan Segundo Addamo | Ordenamiento y expansión mínima | ✅ hecho y en `main` |
+| 3 — Nicolas Cortese | Optimización y búsqueda | ✅ hecho y en `main` (PR #3) |
 
 **La entrega final es el 28/10** (tag `entrega-final`). Ver
 [06-GIT-Y-ENTREGA.md](06-GIT-Y-ENTREGA.md).

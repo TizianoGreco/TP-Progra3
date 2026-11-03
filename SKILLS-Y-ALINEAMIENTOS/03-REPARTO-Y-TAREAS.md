@@ -3,7 +3,7 @@
 | Persona | Bloque | Puntos | Algoritmos |
 |---|---|---|---|
 | 1 — Tiziano Greco | Grafos y configuración | 3 | Spring Boot + Neo4j, carga del grafo, BFS, DFS, Dijkstra (+ UCS opcional) |
-| 2 — _(completar)_ | Ordenamiento y expansión mínima | 4 | QuickSort, MergeSort, Prim, Kruskal, Greedy |
+| 2 — Juan Segundo Addamo | Ordenamiento y expansión mínima | 4 | QuickSort, MergeSort, Prim, Kruskal, Greedy |
 | 3 — Nicolas Cortese | Optimización y búsqueda | 3 | Mochila 0/1, Floyd-Warshall, Backtracking, Branch & Bound + consolidar README y docs |
 
 > Repartirse los algoritmos **para programar** está bien. Repartirse los algoritmos
@@ -47,7 +47,9 @@ Pendiente de Persona 1: verificar contra Neo4j real el orden de DFS/BFS que figu
 
 ---
 
-## Persona 2 — Ordenamiento y expansión mínima (4 puntos)
+## Persona 2 — Juan Segundo Addamo — Ordenamiento y expansión mínima (4 puntos) ✅
+
+Hecho y en `main`.
 
 **Orden sugerido:** MergeSort → QuickSort → Kruskal → Prim → Greedy. MergeSort primero
 porque Kruskal y Greedy lo usan para ordenar.

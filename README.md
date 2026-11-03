@@ -32,7 +32,7 @@ de grafos, ordenamiento, selección y optimización de la materia.
 |---|---|---|
 | Tiziano Greco | [@TizianoGreco](https://github.com/TizianoGreco) | Grafos y configuración |
 | Nicolas Cortese | [@nicortese](https://github.com/nicortese) | Optimización y búsqueda |
-| _(completar)_ | _(completar)_ | _(completar)_ |
+| Juan Segundo Addamo | [@juanseaddamo](https://github.com/juanseaddamo) | Ordenamiento y expansión mínima |
 
 ## Contenido
 
@@ -185,18 +185,17 @@ el óptimo de la mochila 0/1 es {P2, P3} = **95 USD**.
 | DFS | recorrido | `GET /api/grafo/dfs?origen=CD` | O(V + E) | 1 | ✅ |
 | Dijkstra | greedy sobre grafos | `GET /api/grafo/dijkstra?origen=CD&destino=QUI` | O((V + E) log V) | 1 | ✅ |
 | UCS | greedy sobre grafos | `GET /api/grafo/ucs?origen=CD&destino=QUI` | O((V + E) log V) | opcional | ✅ |
-| Prim | greedy sobre grafos | `GET /api/grafo/prim?origen=CD` | O(E log V) | 1 | ⏳ |
-| Kruskal | greedy + Union-Find | `GET /api/grafo/kruskal` | O(E log E) | 1 | ⏳ |
-| QuickSort | divide y vencerás | `GET /api/seleccion/quicksort?criterio=ratio` | O(n log n) prom., O(n²) peor | 1 | ⏳ |
-| MergeSort | divide y vencerás | `GET /api/seleccion/mergesort?criterio=peso` | O(n log n) | (con QuickSort) | ⏳ |
-| Greedy | greedy | `GET /api/seleccion/greedy?capacidad=10` | O(n log n) | 1 | ⏳ |
+| Prim | greedy sobre grafos | `GET /api/grafo/prim?origen=CD` | O(E log V) | 1 | ✅ |
+| Kruskal | greedy + Union-Find | `GET /api/grafo/kruskal` | O(E log E) | 1 | ✅ |
+| QuickSort | divide y vencerás | `GET /api/seleccion/quicksort?criterio=ratio` | O(n log n) prom., O(n²) peor | 1 | ✅ |
+| MergeSort | divide y vencerás | `GET /api/seleccion/mergesort?criterio=peso` | O(n log n) | (con QuickSort) | ✅ |
+| Greedy | greedy | `GET /api/seleccion/greedy?capacidad=10` | O(n log n) | 1 | ✅ |
 | Mochila 0/1 | programación dinámica | `GET /api/seleccion/dinamica?capacidad=10` | O(n · W) | 1 | ✅ |
 | Floyd-Warshall | programación dinámica | `GET /api/grafo/floyd` | O(V³) | (PD) | ✅ |
 | Backtracking | backtracking | `GET /api/grafo/rutas?origen=CD&destino=QUI&costoMaximo=37&saltosMaximos=5` | O(V!) peor caso | 1 | ✅ |
 | Branch & Bound | ramificación y poda | `GET /api/seleccion/repartir?contenedores=3` | O(kⁿ) peor caso | 1 | ✅ |
 
-✅ implementado, con tests y ficha · ⏳ en desarrollo: el endpoint responde
-`501 Not Implemented` con un mensaje claro.
+✅ implementado, con tests y ficha.
 
 `V` = nodos, `E` = rutas, `n` = paquetes, `W` = capacidad, `k` = vehículos. Endpoint de
 verificación: `GET /api/grafo/resumen`. Además, `GET /api/grafo/floyd/comparacion` compara
@@ -258,7 +257,6 @@ Request → Controller → GrafoService.cargar() → Grafo en memoria → algori
 |---|---|
 | 400 | parámetro faltante o inválido, nodo inexistente |
 | 422 | estado imposible: destino inalcanzable, grafo no conexo, ciclo negativo |
-| 501 | algoritmo todavía no implementado |
 | 404 / 500 | ruta inexistente / error interno (detalle en el log del servidor) |
 
 ## 7. Instalación y ejecución
@@ -302,7 +300,9 @@ inalcanzable, pesos negativos, origen inexistente, grafo no conexo).
 | `GrafoTest` | 4 | estructura del grafo, matriz de adyacencia, grafo no dirigido |
 | `RecorridosTest` | 6 | BFS y DFS: orden, no repetición, nodos sin salida, errores |
 | `CaminosMinimosTest` | 11 | Dijkstra, UCS y Floyd-Warshall: caminos indirectos, reconstrucción, inalcanzables, pesos y ciclos negativos, Floyd vs. Dijkstra |
-| `SeleccionTest` | 5 | Mochila 0/1: 95 USD contra 78 del greedy, capacidad cero, ítem que no entra, errores |
+| `SeleccionTest` | 9 | Greedy y mochila 0/1: 78 USD contra 95, capacidad cero, ítem que no entra, errores |
+| `OrdenamientoTest` | 7 | QuickSort y MergeSort: orden por peso y ratio, estabilidad, entrada ordenada y duplicados |
+| `ArbolRecubrimientoTest` | 6 | Prim y Kruskal: 9 aristas y 77 km, rutas que cierran ciclo, grafo no conexo, Union-Find |
 | `BacktrackingTest` | 6 | rutas simples: las 8 de CD a QUI, poda por costo (límite inclusivo) y por saltos, sin camino, errores |
 | `RamificacionYPodaTest` | 5 | reparto en 2, 3 y 4 vehículos (cota, 12 kg, 9 kg), errores, entrada sin modificar |
 
@@ -324,7 +324,7 @@ los algoritmos de su bloque, y todos estudian el conjunto completo.
 | Bloque | Responsable | Alcance | Puntos |
 |---|---|---|:---:|
 | Grafos y configuración | Tiziano Greco | Spring Boot y Neo4j, carga del dominio, BFS, DFS, Dijkstra (+ UCS) | 3 |
-| Ordenamiento y expansión mínima | _(completar)_ | QuickSort, MergeSort, Prim, Kruskal, Greedy | 4 |
+| Ordenamiento y expansión mínima | Juan Segundo Addamo | QuickSort, MergeSort, Prim, Kruskal, Greedy | 4 |
 | Optimización y búsqueda | Nicolas Cortese | Mochila 0/1, Floyd-Warshall, Backtracking, Branch & Bound, documentación general | 3 |
 
 **Flujo de trabajo:** una rama por bloque o algoritmo, Pull Request a `main` con los tests
@@ -341,7 +341,10 @@ Conforme a la sección 7 de la consigna, se declara el uso de asistentes de IA:
   DFS, Dijkstra y sus tests a partir de las especificaciones del scaffold, para redactar
   la documentación y para verificar los resultados contra el cálculo a mano. Todo el código
   fue leído, ejecutado y revisado, y se puede explicar y reescribir sin asistencia.
-- **_(completar)_ (ordenamiento y expansión mínima).** _(declarar herramienta y uso)_
+- **Juan Segundo Addamo (ordenamiento y expansión mínima).** QuickSort, MergeSort, Prim,
+  Kruskal y Greedy se integraron con **Claude Code** (Anthropic), a partir de las
+  especificaciones del scaffold y de los valores calculados a mano del dominio (77 km del
+  árbol mínimo, 78 USD del greedy contra 95 de la mochila 0/1).
 - **Nicolas Cortese (optimización y búsqueda).** Se usó **Cursor** para implementar la
   mochila 0/1, Floyd-Warshall, el backtracking de rutas y Branch & Bound, con sus tests y
   las fichas de documentación, a partir de los valores calculados a mano del dominio. Esos
