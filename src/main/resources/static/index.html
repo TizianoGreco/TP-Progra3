@@ -7,186 +7,378 @@
 <!--
   Pagina visual del TP. NO implementa ningun algoritmo: todo lo que muestra
   sale de los endpoints /api/... La pagina solo dibuja y anima los resultados.
-  Lo unico que calcula es la suma de km de la ruta que arma el jugador.
+  Lo unico que calcula es la suma de km de la ruta que arma el jugador y el
+  peso/valor de la carga que elige, para poder compararlos con la API.
 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #f6f4ef; --panel: #ffffff; --ink: #1f2328; --muted: #6b6f76; --line: #d9d6cf;
-    --edge: #b9b5ac; --centro: #1f4e79; --deposito: #2f7d5b; --accent: #d9822b;
-    --path: #c0392b; --visit: #7b4fd1; --ok: #2f7d5b; --bad: #c0392b; --chip: #efece6;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #15171a; --panel: #1e2125; --ink: #e8e6e1; --muted: #9a9ea6; --line: #33373d;
-      --edge: #4a4f57; --centro: #5b9bd5; --deposito: #4fbf8b; --accent: #f0a050;
-      --path: #ff6b5b; --visit: #a985ff; --ok: #4fbf8b; --bad: #ff6b5b; --chip: #2a2e33;
-    }
+    color-scheme: dark;
+    --bg: #090c11; --bg2: #0d1118; --panel: #10151d; --panel2: #151c26; --raise: #1b2430;
+    --line: #1f2834; --line2: #2b3646; --ink: #e8edf3; --muted: #8b97a8; --dim: #5a6576;
+    --amber: #ffb547; --amber-ink: #1a1206; --coral: #ff5f57; --teal: #3fd5c2;
+    --blue: #5b9dff; --green: #43c58a; --water: #0b1722; --road: #263040;
+    --display: "Barlow Condensed", "Arial Narrow", sans-serif;
+    --body: "Barlow", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink);
-         font: 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
-  header { padding: 18px 20px 6px; max-width: 1180px; margin: 0 auto; }
-  h1 { font-size: 22px; margin: 0; }
-  header p { margin: 4px 0 0; color: var(--muted); }
-  main { max-width: 1180px; margin: 0 auto; padding: 12px 16px 32px;
-         display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 16px; }
-  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
-  #mapa { width: 100%; height: auto; display: block; }
-  .tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-  .tabs button { border: 1px solid var(--line); background: var(--chip); color: var(--ink);
-                 padding: 7px 12px; border-radius: 999px; cursor: pointer; font: inherit; }
-  .tabs button.activo { background: var(--ink); color: var(--panel); border-color: var(--ink); }
-  .seccion { display: none; } .seccion.activa { display: block; }
-  h2 { font-size: 17px; margin: 0 0 6px; }
-  .ayuda { color: var(--muted); margin: 0 0 12px; font-size: 14px; }
-  .fila { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
-  select, input[type=number] { font: inherit; padding: 6px 8px; border-radius: 8px;
-         border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
-  .btn { font: inherit; padding: 7px 14px; border-radius: 8px; border: 1px solid var(--ink);
-         background: var(--ink); color: var(--panel); cursor: pointer; }
-  .btn.sec { background: transparent; color: var(--ink); }
-  .resultado { background: var(--chip); border-radius: 8px; padding: 10px 12px; min-height: 44px;
-               font-size: 14px; white-space: pre-line; }
-  .orden { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
-  .orden span { background: var(--visit); color: #fff; border-radius: 6px; padding: 2px 7px;
-                font-size: 13px; opacity: .25; transition: opacity .2s; }
-  .orden span.on { opacity: 1; }
-  .lista { list-style: none; padding: 0; margin: 8px 0 0; }
-  .lista li { padding: 6px 8px; border-radius: 6px; cursor: pointer; font-size: 14px; }
-  .lista li:hover, .lista li.on { background: var(--chip); }
-  .paquetes { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
-  .paq { border: 2px solid var(--line); border-radius: 10px; padding: 8px 10px; cursor: pointer;
-         background: var(--panel); text-align: left; font: inherit; color: var(--ink); }
-  .paq.on { border-color: var(--accent); background: var(--chip); }
-  .paq b { display: block; } .paq small { color: var(--muted); }
-  .barra { height: 12px; border-radius: 999px; background: var(--chip); overflow: hidden; margin: 8px 0; }
-  .barra div { height: 100%; background: var(--accent); width: 0; transition: width .2s; }
-  .barra.lleno div { background: var(--bad); }
-  .marcador { font-size: 14px; color: var(--muted); }
-  .ok { color: var(--ok); font-weight: 600; } .mal { color: var(--bad); font-weight: 600; }
-  .leyenda { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); margin-top: 6px; }
-  .leyenda i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 5px;
-               vertical-align: -1px; }
-  #error { display: none; background: var(--bad); color: #fff; padding: 10px 14px; border-radius: 8px;
-           max-width: 1180px; margin: 8px auto 0; }
-  svg text { font-family: system-ui, sans-serif; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 var(--body);
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; color: inherit; }
+  .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .k { font: 600 11px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+
+  /* ---------- barra superior ---------- */
+  .bar {
+    height: 60px; display: flex; align-items: center; gap: 24px; padding: 0 20px;
+    border-bottom: 1px solid var(--line); background: var(--bg2);
+  }
+  .marca { display: flex; align-items: center; gap: 11px; min-width: 0; }
+  .marca svg { flex: none; }
+  .marca b { display: block; font: 700 18px/1 var(--display); letter-spacing: .06em; text-transform: uppercase; }
+  .marca span { display: block; font-size: 12px; color: var(--muted); margin-top: 3px; white-space: nowrap; }
+  .modos { display: flex; gap: 2px; margin-left: auto; background: var(--panel); border: 1px solid var(--line);
+           border-radius: 8px; padding: 3px; }
+  .modos button {
+    border: 0; background: none; padding: 7px 14px; border-radius: 6px; cursor: pointer;
+    font: 600 14px/1 var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .modos button kbd { font: 500 10px/1 var(--mono); color: var(--dim); border: 1px solid var(--line2);
+                      border-radius: 3px; padding: 2px 4px; }
+  .modos button:hover { color: var(--ink); }
+  .modos button.on { background: var(--raise); color: var(--ink); box-shadow: inset 0 -2px 0 var(--amber); }
+  .estado-api { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .estado-api i { width: 7px; height: 7px; border-radius: 50%; background: var(--dim); }
+  .estado-api.ok i { background: var(--green); box-shadow: 0 0 0 3px rgba(67,197,138,.15); }
+  .estado-api.mal i { background: var(--coral); }
+
+  /* ---------- escenario ---------- */
+  .escena { display: grid; grid-template-columns: minmax(0, 1fr) 400px; height: calc(100% - 60px); min-height: 560px; }
+  .mapa-wrap { position: relative; overflow: hidden; background: var(--bg);
+    background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 40px 40px; background-position: -1px -1px; }
+  .mapa-wrap::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse at 45% 50%, transparent 40%, rgba(9,12,17,.85) 100%); }
+  #mapa { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; overflow: visible; }
+  .hud { position: absolute; z-index: 2; font-size: 12px; color: var(--muted); pointer-events: none; }
+  .hud.izq { left: 18px; bottom: 16px; display: flex; gap: 16px; flex-wrap: wrap; }
+  .hud.izq span { display: flex; align-items: center; gap: 7px; }
+  .sw { width: 10px; height: 10px; display: inline-block; border: 2px solid; }
+  .sw.c { border-color: var(--blue); background: #15243a; border-radius: 2px; }
+  .sw.d { border-color: var(--green); background: #12291f; border-radius: 50%; }
+  .sw.l { width: 18px; height: 0; border-width: 2px 0 0; }
+  .aviso { position: absolute; z-index: 3; left: 50%; top: 18px; transform: translate(-50%, -12px); opacity: 0;
+    background: var(--raise); border: 1px solid var(--line2); border-left: 3px solid var(--coral);
+    padding: 9px 14px; border-radius: 6px; font-size: 14px; transition: .2s; pointer-events: none; max-width: 90%; }
+  .aviso.on { opacity: 1; transform: translate(-50%, 0); }
+
+  /* nodos y rutas */
+  .ruta-base { stroke: var(--road); stroke-width: 3; fill: none; }
+  .ruta-flujo { stroke-width: 3.5; fill: none; stroke-dasharray: 2 9; stroke-linecap: round; opacity: 0;
+                animation: flujo 1s linear infinite; }
+  @keyframes flujo { to { stroke-dashoffset: -11; } }
+  .ruta-on .ruta-base { stroke-width: 5; }
+  .km { font: 600 10.5px var(--mono); fill: var(--dim); }
+  .km-bg { fill: var(--bg); }
+  .ruta-on .km { fill: var(--ink); }
   .nodo { cursor: pointer; outline: none; }
-  .nodo circle { transition: fill .2s, stroke .2s, r .2s; }
+  .nodo .halo { opacity: 0; transition: opacity .2s; }
+  .nodo:hover .halo, .nodo:focus-visible .halo, .nodo.foco .halo { opacity: 1; }
+  .nodo .cuerpo { transition: fill .25s, stroke .25s; }
+  .nodo text.id { font: 700 13px var(--display); letter-spacing: .06em; fill: var(--ink); pointer-events: none; }
+  .nodo text.nom { font: 500 11px var(--body); fill: var(--muted); pointer-events: none; }
+  .nodo text.orden { font: 700 11px var(--mono); fill: var(--amber-ink); pointer-events: none; }
+  .agua-txt { font: italic 500 13px var(--body); fill: #2a4560; letter-spacing: .3em; text-transform: uppercase; }
+
+  /* ---------- panel lateral ---------- */
+  .panel { border-left: 1px solid var(--line); background: var(--panel); overflow-y: auto; display: flex; flex-direction: column; }
+  .modo { display: none; flex-direction: column; min-height: 100%; }
+  .modo.on { display: flex; }
+  .bloque { padding: 18px 20px; border-bottom: 1px solid var(--line); }
+  .bloque[hidden] { display: none; }
+  .titulo { font: 700 26px/1.05 var(--display); letter-spacing: .02em; text-transform: uppercase; margin: 6px 0 4px; }
+  .sub { color: var(--muted); font-size: 14px; margin: 0; }
+  .trayecto { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+  .trayecto[hidden] { display: none; }
+  .chapa { font: 700 15px/1 var(--display); letter-spacing: .06em; padding: 7px 9px; border-radius: 4px; border: 1px solid var(--line2);
+           background: var(--raise); }
+  .chapa.a { border-color: var(--amber); color: var(--amber); }
+  .chapa.b { border-color: var(--coral); color: var(--coral); }
+  .trayecto .linea { flex: 1; height: 2px; background: repeating-linear-gradient(90deg, var(--line2) 0 6px, transparent 6px 11px); }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .stats > div { background: var(--panel2); padding: 11px 12px; }
+  .stats .v { font: 600 20px/1.1 var(--mono); margin-top: 6px; }
+  .stats .v small { font-size: 11px; color: var(--muted); font-weight: 400; margin-left: 2px; }
+  .salidas { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; min-height: 34px; }
+  .salida { border: 1px solid var(--line2); background: var(--panel2); border-radius: 6px; padding: 6px 10px; cursor: pointer;
+            display: flex; gap: 8px; align-items: baseline; transition: border-color .15s, background .15s; }
+  .salida b { font: 700 14px/1 var(--display); letter-spacing: .05em; }
+  .salida span { font: 500 11px var(--mono); color: var(--muted); }
+  .salida:hover { border-color: var(--amber); background: var(--raise); }
+  .vacio { color: var(--dim); font-size: 13px; padding: 8px 0; }
+  .acciones { display: flex; gap: 8px; margin-top: 14px; }
+  .btn { flex: 1; border: 1px solid var(--line2); background: var(--raise); border-radius: 6px; padding: 11px 14px; cursor: pointer;
+         font: 700 14px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; transition: .15s; }
+  .btn:hover { border-color: var(--muted); }
+  .btn.pri { background: var(--amber); border-color: var(--amber); color: var(--amber-ink); }
+  .btn.pri:hover { filter: brightness(1.08); }
+  .btn:disabled { opacity: .4; cursor: default; filter: none; }
+  .resultado { display: none; }
+  .resultado.on { display: block; animation: entra .35s ease-out; }
+  @keyframes entra { from { opacity: 0; transform: translateY(8px); } }
+  .veredicto { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .veredicto .titulo { font-size: 30px; margin: 4px 0 0; }
+  .veredicto .titulo.ok { color: var(--amber); }
+  .estrellas { display: flex; gap: 4px; }
+  .estrellas svg { width: 26px; height: 26px; }
+  .comparacion { margin-top: 14px; display: grid; gap: 10px; }
+  .fila-comp { display: grid; grid-template-columns: 92px 1fr auto; gap: 10px; align-items: center; font-size: 13px; }
+  .fila-comp .k { font-size: 10.5px; }
+  .pista { height: 8px; background: var(--bg); border-radius: 2px; overflow: hidden; }
+  .pista div { height: 100%; width: 0; transition: width .7s cubic-bezier(.2,.8,.2,1); }
+  .fila-comp .v { font: 600 13px var(--mono); min-width: 64px; text-align: right; }
+  .fila-comp .det { grid-column: 2 / 4; margin-top: -6px; font: 400 11.5px var(--mono); color: var(--dim); }
+  .pie { margin-top: auto; padding: 14px 20px; border-top: 1px solid var(--line); display: flex; justify-content: space-between;
+         font-size: 12px; color: var(--muted); }
+
+  /* carga */
+  .capacidad { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; }
+  .stepper { display: flex; align-items: center; border: 1px solid var(--line2); border-radius: 6px; overflow: hidden; }
+  .stepper button { width: 34px; height: 34px; border: 0; background: var(--raise); cursor: pointer; font: 600 16px var(--mono); }
+  .stepper button:hover { background: var(--line2); }
+  .stepper output { min-width: 64px; text-align: center; font: 600 15px var(--mono); }
+  .bodega { margin-top: 14px; height: 46px; border: 1px solid var(--line2); border-radius: 6px; background: var(--bg);
+            display: flex; padding: 3px; gap: 3px; position: relative; overflow: hidden;
+            background-image: repeating-linear-gradient(90deg, transparent 0 calc(10% - 1px), var(--line) calc(10% - 1px) 10%); }
+  .bodega.exceso { border-color: var(--coral); box-shadow: 0 0 0 3px rgba(255,95,87,.12); }
+  .bulto { height: 100%; border-radius: 3px; display: flex; align-items: center; justify-content: center; flex: none;
+           font: 700 12px var(--display); letter-spacing: .05em; color: rgba(0,0,0,.75); overflow: hidden; animation: entra .25s ease-out; }
+  .bodega-info { display: flex; justify-content: space-between; margin-top: 8px; font: 500 12px var(--mono); color: var(--muted); }
+  .bodega-info .exc { color: var(--coral); }
+  .paquetes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .paq { text-align: left; border: 1px solid var(--line2); background: var(--panel2); border-radius: 7px; padding: 10px 11px 9px;
+         cursor: pointer; position: relative; transition: border-color .15s, background .15s; }
+  .paq:hover { border-color: var(--muted); }
+  .paq.on { border-color: var(--amber); background: #1d1a12; }
+  .paq .tope { display: flex; justify-content: space-between; align-items: center; }
+  .paq .tag { font: 700 12px/1 var(--display); letter-spacing: .06em; padding: 3px 5px; border-radius: 3px; color: rgba(0,0,0,.78); }
+  .paq .check { width: 16px; height: 16px; border: 1.5px solid var(--line2); border-radius: 4px; display: grid; place-items: center; }
+  .paq.on .check { background: var(--amber); border-color: var(--amber); }
+  .paq .nombre { font-weight: 600; margin: 8px 0 2px; }
+  .paq .datos { display: flex; gap: 10px; font: 500 12px var(--mono); color: var(--muted); }
+  .paq .ratio { height: 3px; background: var(--bg); margin-top: 8px; border-radius: 2px; overflow: hidden; }
+  .paq .ratio div { height: 100%; background: var(--teal); }
+
+  /* laboratorio */
+  .algos { display: grid; gap: 4px; }
+  .algo { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; text-align: left; border: 1px solid transparent;
+          background: none; border-radius: 6px; padding: 9px 11px; cursor: pointer; }
+  .algo:hover { background: var(--panel2); }
+  .algo.on { background: var(--raise); border-color: var(--line2); box-shadow: inset 3px 0 0 var(--amber); }
+  .algo b { font: 700 15px/1.1 var(--display); letter-spacing: .05em; text-transform: uppercase; }
+  .algo code { font: 500 11px var(--mono); color: var(--teal); align-self: center; }
+  .algo span { grid-column: 1 / 3; font-size: 12.5px; color: var(--muted); }
+  .params { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .campo { display: grid; gap: 6px; }
+  .campo[hidden] { display: none; }
+  .campo.ancho { grid-column: 1 / 3; }
+  .campo select, .campo input {
+    font: 600 14px var(--body); color: var(--ink); background: var(--panel2); border: 1px solid var(--line2);
+    border-radius: 6px; padding: 9px 10px; width: 100%; appearance: none; }
+  .campo select { background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+    background-position: calc(100% - 15px) 55%, calc(100% - 10px) 55%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 26px; }
+  .campo select:focus, .campo input:focus { outline: none; border-color: var(--amber); }
+  .ayuda-mapa { font-size: 12px; color: var(--dim); margin-top: 10px; }
+  .ayuda-mapa[hidden] { display: none; }
+  .consola { font: 400 12.5px/1.6 var(--mono); background: var(--bg); border: 1px solid var(--line); border-radius: 6px;
+             padding: 10px 12px; max-height: 260px; overflow-y: auto; margin-top: 12px; }
+  .consola div { display: flex; gap: 10px; animation: entra .25s ease-out; padding: 0 4px; }
+  .consola .n { color: var(--dim); min-width: 22px; }
+  .consola .t { color: var(--ink); }
+  .consola .t em { color: var(--teal); font-style: normal; }
+  .consola .t.dest { color: var(--amber); }
+  .consola .ruta { cursor: pointer; border-radius: 3px; }
+  .consola .ruta:hover, .consola .ruta.on { background: var(--panel2); }
+  .resumen-lab { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin-top: 12px; }
+  .resumen-lab > div { background: var(--panel2); padding: 10px 12px; }
+  .resumen-lab .v { font: 600 17px/1.1 var(--mono); margin-top: 5px; }
+
+  @media (max-width: 980px) {
+    .escena { grid-template-columns: 1fr; height: auto; }
+    .mapa-wrap { height: 62vh; min-height: 380px; }
+    .panel { border-left: 0; border-top: 1px solid var(--line); }
+    .estado-api { display: none; }
+  }
+  @media (max-width: 620px) {
+    .bar { height: auto; flex-wrap: wrap; gap: 10px; padding: 12px 16px; }
+    .modos { margin-left: 0; width: 100%; }
+    .modos button { flex: 1; justify-content: center; padding: 8px 6px; }
+    .modos button kbd { display: none; }
+    .bloque { padding: 16px; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .hud.izq { gap: 6px 12px; left: 12px; bottom: 10px; font-size: 11px; }
+  }
 </style>
 </head>
 <body>
-<header>
-  <h1>Red logística AMBA</h1>
-  <p>Los algoritmos del TP corriendo en vivo contra la API. Las flechas marcan el sentido de cada ruta y el número son los km.</p>
+<header class="bar">
+  <div class="marca">
+    <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
+      <rect x="1" y="1" width="32" height="32" rx="7" fill="#151c26" stroke="#2b3646"/>
+      <path d="M9 24 L15 11 L21 19 L26 9" fill="none" stroke="#ffb547" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="9" cy="24" r="2.6" fill="#5b9dff"/><circle cx="15" cy="11" r="2.6" fill="#43c58a"/>
+      <circle cx="21" cy="19" r="2.6" fill="#43c58a"/><circle cx="26" cy="9" r="2.6" fill="#ff5f57"/>
+    </svg>
+    <div><b>Red Logística AMBA</b><span>TPO Programación III · UADE</span></div>
+  </div>
+  <nav class="modos" aria-label="Modos">
+    <button data-modo="mision" class="on"><kbd>1</kbd>Misión</button>
+    <button data-modo="carga"><kbd>2</kbd>Carga</button>
+    <button data-modo="lab"><kbd>3</kbd>Laboratorio</button>
+  </nav>
+  <div class="estado-api" id="estado-api"><i></i><span>Conectando…</span></div>
 </header>
-<div id="error"></div>
-<main>
-  <section class="card">
-    <svg id="mapa" viewBox="0 0 640 520" role="img" aria-label="Mapa de la red logística"></svg>
-    <div class="leyenda">
-      <span><i style="background:var(--centro)"></i>Centro de distribución</span>
-      <span><i style="background:var(--deposito)"></i>Depósito</span>
-      <span><i style="background:var(--visit)"></i>Visitado</span>
-      <span><i style="background:var(--path)"></i>Camino / árbol</span>
+
+<div class="escena">
+  <section class="mapa-wrap">
+    <svg id="mapa" viewBox="0 0 680 560" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Mapa de la red logística"></svg>
+    <div class="hud izq">
+      <span><i class="sw c"></i>Centro de distribución</span>
+      <span><i class="sw d"></i>Depósito</span>
+      <span><i class="sw l" style="border-color:var(--amber)"></i>Tu ruta</span>
+      <span><i class="sw l" style="border-color:var(--coral)"></i>Óptimo</span>
+      <span><i class="sw l" style="border-color:var(--teal)"></i>Algoritmo</span>
     </div>
+    <div class="aviso" id="aviso"></div>
   </section>
 
-  <section class="card">
-    <nav class="tabs">
-      <button data-tab="juego" class="activo">🎮 Ganale a Dijkstra</button>
-      <button data-tab="camion">🚚 Cargá el camión</button>
-      <button data-tab="recorridos">Recorridos</button>
-      <button data-tab="caminos">Camino mínimo</button>
-      <button data-tab="arbol">Árbol mínimo</button>
-      <button data-tab="rutas">Rutas</button>
-    </nav>
-
-    <div class="seccion activa" id="tab-juego">
-      <h2>Ganale a Dijkstra</h2>
-      <p class="ayuda">Armá la ruta más corta haciendo clic en los nodos, siguiendo el sentido de las flechas. Después Dijkstra muestra la suya.</p>
-      <div class="fila">
-        <button class="btn" id="juego-nuevo">Nueva partida</button>
-        <button class="btn sec" id="juego-deshacer">Deshacer</button>
-        <span class="marcador" id="juego-marcador">Ganadas 0 · Jugadas 0</span>
+  <aside class="panel">
+    <!-- ================= MISION ================= -->
+    <div class="modo on" id="modo-mision">
+      <div class="bloque">
+        <div class="k" id="m-kicker">Modo misión</div>
+        <div class="titulo" id="m-titulo">Ganale a Dijkstra</div>
+        <p class="sub" id="m-sub">Armá la ruta más corta tocando los nodos en el mapa, siempre en el sentido de las flechas. Al llegar, el camión de Dijkstra sale con la suya.</p>
+        <div class="trayecto" id="m-trayecto" hidden>
+          <span class="chapa a" id="m-a"></span><span class="linea"></span><span class="chapa b" id="m-b"></span>
+        </div>
       </div>
-      <div class="resultado" id="juego-estado">Tocá "Nueva partida".</div>
+      <div class="bloque">
+        <div class="stats">
+          <div><div class="k">Recorrido</div><div class="v" id="m-km">0<small>km</small></div></div>
+          <div><div class="k">Tramos</div><div class="v" id="m-tramos">0</div></div>
+          <div><div class="k">Puntos</div><div class="v" id="m-puntos">0</div></div>
+          <div><div class="k">Racha</div><div class="v" id="m-racha">0</div></div>
+        </div>
+      </div>
+      <div class="bloque" id="m-juego">
+        <div class="k">Próximo tramo desde <span id="m-desde" style="color:var(--ink)">—</span></div>
+        <div class="salidas" id="m-salidas"><div class="vacio">Empezá una misión para ver las salidas.</div></div>
+        <div class="acciones">
+          <button class="btn" id="m-deshacer" disabled>Deshacer</button>
+          <button class="btn pri" id="m-nueva">Nueva misión</button>
+        </div>
+      </div>
+      <div class="bloque resultado" id="m-resultado">
+        <div class="veredicto">
+          <div><div class="k" id="r-kicker">Resultado</div><div class="titulo" id="r-titulo"></div></div>
+          <div class="estrellas" id="r-estrellas"></div>
+        </div>
+        <div class="comparacion" id="r-comp"></div>
+        <div class="acciones"><button class="btn pri" id="r-siguiente">Siguiente misión</button></div>
+      </div>
+      <div class="pie"><span>Récord <b class="num" id="m-record" style="color:var(--ink)">0</b> pts</span><span id="m-partidas">0 misiones</span></div>
     </div>
 
-    <div class="seccion" id="tab-camion">
-      <h2>Cargá el camión</h2>
-      <p class="ayuda">Elegí paquetes sin pasarte del peso. Gana el que junte más valor. Después compará con Greedy y con Programación Dinámica.</p>
-      <div class="fila">
-        <label>Capacidad <input type="number" id="cap" value="10" min="1" max="40" style="width:70px"> kg</label>
-        <button class="btn" id="camion-comparar">Comparar</button>
-        <button class="btn sec" id="camion-vaciar">Vaciar</button>
+    <!-- ================= CARGA ================= -->
+    <div class="modo" id="modo-carga">
+      <div class="bloque">
+        <div class="k">Problema de la mochila</div>
+        <div class="titulo">Cargá el camión</div>
+        <p class="sub">Elegí qué paquetes subir sin pasarte del peso. Gana el que más valor declarado lleve. Después competís contra Greedy y Programación Dinámica.</p>
+        <div class="capacidad">
+          <div class="k">Capacidad del camión</div>
+          <div class="stepper">
+            <button id="c-menos" aria-label="Menos capacidad">−</button>
+            <output id="c-cap">10 kg</output>
+            <button id="c-mas" aria-label="Más capacidad">+</button>
+          </div>
+        </div>
+        <div class="bodega" id="c-bodega"></div>
+        <div class="bodega-info"><span id="c-peso">0 / 10 kg</span><span id="c-valor">0 USD</span></div>
       </div>
-      <div class="barra" id="camion-barra"><div></div></div>
-      <div class="marcador" id="camion-carga">0 / 10 kg · 0 USD</div>
-      <div class="paquetes" id="paquetes" style="margin:10px 0"></div>
-      <div class="resultado" id="camion-resultado"></div>
+      <div class="bloque">
+        <div class="k" style="margin-bottom:10px">Paquetes · la barra es USD por kg</div>
+        <div class="paquetes" id="c-paquetes"></div>
+        <div class="acciones">
+          <button class="btn" id="c-vaciar">Vaciar</button>
+          <button class="btn pri" id="c-comparar">Despachar</button>
+        </div>
+      </div>
+      <div class="bloque resultado" id="c-resultado">
+        <div class="veredicto">
+          <div><div class="k">Resultado</div><div class="titulo" id="cr-titulo"></div></div>
+          <div class="estrellas" id="cr-estrellas"></div>
+        </div>
+        <div class="comparacion" id="cr-comp"></div>
+      </div>
     </div>
 
-    <div class="seccion" id="tab-recorridos">
-      <h2>BFS y DFS</h2>
-      <p class="ayuda">BFS recorre por niveles. DFS baja por una rama hasta el fondo. Los vecinos se visitan del más cercano al más lejano.</p>
-      <div class="fila">
-        <label>Desde <select id="rec-origen"></select></label>
-        <button class="btn" data-rec="bfs">BFS</button>
-        <button class="btn" data-rec="dfs">DFS</button>
+    <!-- ================= LABORATORIO ================= -->
+    <div class="modo" id="modo-lab">
+      <div class="bloque">
+        <div class="k">Laboratorio</div>
+        <div class="titulo">Algoritmos en vivo</div>
+        <p class="sub">Cada corrida le pega a la API y anima la respuesta sobre el mapa.</p>
       </div>
-      <div class="resultado" id="rec-resultado">Elegí un origen y un recorrido.</div>
-    </div>
-
-    <div class="seccion" id="tab-caminos">
-      <h2>Camino mínimo</h2>
-      <p class="ayuda">Dijkstra y UCS encuentran el mismo camino. UCS frena apenas llega al destino, así que suele expandir menos nodos.</p>
-      <div class="fila">
-        <select id="cam-origen"></select> → <select id="cam-destino"></select>
-        <button class="btn" data-cam="dijkstra">Dijkstra</button>
-        <button class="btn" data-cam="ucs">UCS</button>
+      <div class="bloque"><div class="algos" id="l-algos"></div></div>
+      <div class="bloque">
+        <div class="params">
+          <label class="campo" id="l-c-origen"><span class="k">Origen</span><select id="l-origen"></select></label>
+          <label class="campo" id="l-c-destino"><span class="k">Destino</span><select id="l-destino"></select></label>
+          <label class="campo ancho" id="l-c-tope"><span class="k">Tope de distancia (km)</span><input type="number" id="l-tope" value="37" min="1"></label>
+        </div>
+        <div class="ayuda-mapa" id="l-ayuda">Tocá un nodo del mapa para usarlo como origen; con Shift, como destino.</div>
+        <div class="acciones"><button class="btn pri" id="l-ejecutar">Ejecutar</button></div>
       </div>
-      <div class="resultado" id="cam-resultado"></div>
-    </div>
-
-    <div class="seccion" id="tab-arbol">
-      <h2>Árbol de recubrimiento mínimo</h2>
-      <p class="ayuda">Conecta todos los nodos con el mínimo de km, sin importar el sentido. Prim crece desde un nodo; Kruskal arranca por las aristas más cortas.</p>
-      <div class="fila">
-        <label>Prim desde <select id="prim-origen"></select></label>
-        <button class="btn" id="btn-prim">Prim</button>
-        <button class="btn" id="btn-kruskal">Kruskal</button>
+      <div class="bloque" id="l-salida" hidden>
+        <div class="k" id="l-salida-k">Salida</div>
+        <div class="resumen-lab" id="l-resumen"></div>
+        <div class="consola" id="l-consola"></div>
       </div>
-      <div class="resultado" id="arbol-resultado"></div>
     </div>
-
-    <div class="seccion" id="tab-rutas">
-      <h2>Todas las rutas (backtracking)</h2>
-      <p class="ayuda">Busca todas las rutas simples entre dos nodos. Con un tope de km, poda las ramas que ya se pasaron.</p>
-      <div class="fila">
-        <select id="rut-origen"></select> → <select id="rut-destino"></select>
-        <label>Tope <input type="number" id="rut-tope" value="37" min="1" style="width:70px"> km</label>
-        <button class="btn" id="btn-rutas">Buscar</button>
-      </div>
-      <div class="resultado" id="rut-resultado"></div>
-      <ul class="lista" id="rut-lista"></ul>
-    </div>
-  </section>
-</main>
+  </aside>
+</div>
 
 <script>
-// Posicion aproximada de cada nodo en el AMBA (norte arriba). Un id que no
-// este aca se acomoda en circulo, asi la pagina sigue andando si cambia la red.
+// Posicion aproximada de cada nodo en el AMBA (norte arriba, rio al noreste).
+// Un id que no este aca se acomoda en circulo, asi la pagina sigue andando si cambia la red.
 const POS = {
-  SI: [260, 40], DN: [320, 120], PAL: [340, 205], CAB: [230, 310], MOR: [70, 330],
-  DO: [110, 175], CD: [450, 300], DS: [390, 420], AVE: [520, 395], QUI: [580, 490]
+  SI: [262, 62], DN: [322, 148], PAL: [348, 232], CAB: [236, 330], MOR: [74, 352],
+  DO: [110, 196], CD: [462, 318], DS: [400, 440], AVE: [532, 414], QUI: [592, 506]
 };
-const svg = document.getElementById('mapa');
+const COLORES_PAQ = ['#ffb547', '#3fd5c2', '#5b9dff', '#ff8a65', '#b892ff', '#7ed957', '#ffd166', '#f78fb3'];
+const TONO = { amber: '#ffb547', coral: '#ff5f57', teal: '#3fd5c2' };
 const NS = 'http://www.w3.org/2000/svg';
-let red = { nodos: [], rutas: [] };
-const elNodo = {}, elRuta = {};
+const svg = document.getElementById('mapa');
+const $ = id => document.getElementById(id);
 const pausa = ms => new Promise(r => setTimeout(r, ms));
-let animacion = 0;  // cada animacion nueva cancela la anterior
+const fmt = n => Number.isInteger(n) ? String(n) : n.toFixed(1);
+let red = { nodos: [], rutas: [] }, paquetes = [];
+const elNodo = {}, elRuta = {};
+let capaCamiones, animacion = 0, modo = 'mision';
+
+const guardado = {
+  leer(k, def) { try { const v = localStorage.getItem('tp3.' + k); return v === null ? def : JSON.parse(v); } catch (e) { return def; } },
+  escribir(k, v) { try { localStorage.setItem('tp3.' + k, JSON.stringify(v)); } catch (e) { /* sin storage */ } }
+};
 
 async function api(url) {
   const r = await fetch(url);
@@ -194,9 +386,10 @@ async function api(url) {
   if (!r.ok) throw new Error(cuerpo.detalle || ('Error ' + r.status));
   return cuerpo;
 }
-function mostrarError(msg) {
-  const e = document.getElementById('error');
-  e.textContent = msg; e.style.display = msg ? 'block' : 'none';
+let avisoTimer;
+function avisar(msg) {
+  const a = $('aviso'); a.textContent = msg; a.classList.add('on');
+  clearTimeout(avisoTimer); avisoTimer = setTimeout(() => a.classList.remove('on'), 2600);
 }
 function crear(tag, attrs, padre) {
   const el = document.createElementNS(NS, tag);
@@ -204,190 +397,195 @@ function crear(tag, attrs, padre) {
   (padre || svg).appendChild(el);
   return el;
 }
+const nodo = id => red.nodos.find(n => n.id === id) || { id, nombre: id, tipo: '' };
+// Nombre corto para el mapa: la localidad entre parentesis o, si no hay, el nombre sin el tipo.
+const corto = id => { const n = nodo(id).nombre, p = n.match(/\(([^)]+)\)/); return p ? p[1] : n.replace(/^(Centro de Distribucion|Deposito)\s*/, ''); };
+const kmDe = (a, b) => (red.rutas.find(r => r.origen === a && r.destino === b) || {}).km;
 const clave = (a, b) => a + '>' + b;
-const nombre = id => (red.nodos.find(n => n.id === id) || {}).nombre || id;
 
+// ---------------------------------------------------------------- mapa
 function dibujar() {
   svg.innerHTML = '';
   const defs = crear('defs', {});
-  for (const [id, color] of [['f', 'var(--edge)'], ['fp', 'var(--path)']]) {
-    const m = crear('marker', { id, viewBox: '0 0 10 10', refX: 10, refY: 5,
-      markerWidth: 10, markerHeight: 10, markerUnits: 'userSpaceOnUse', orient: 'auto-start-reverse' }, defs);
-    crear('path', { d: 'M0,0 L10,5 L0,10 z', fill: color }, m);
+  defs.innerHTML = `
+    <pattern id="olas" width="22" height="10" patternUnits="userSpaceOnUse">
+      <path d="M0 6 Q5.5 2 11 6 T22 6" fill="none" stroke="#12263a" stroke-width="1"/></pattern>
+    <filter id="brillo" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"/></filter>`;
+  for (const [id, color] of [['f-base', '#3a4658'], ['f-amber', TONO.amber], ['f-coral', TONO.coral], ['f-teal', TONO.teal]]) {
+    const m = crear('marker', { id, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 9, markerHeight: 9,
+      markerUnits: 'userSpaceOnUse', orient: 'auto' }, defs);
+    crear('path', { d: 'M0,1 L9,5 L0,9 z', fill: color }, m);
   }
+  // Rio de la Plata
+  // La costa sigue mas alla del viewBox para que el agua llegue al borde en cualquier pantalla.
+  const costa = 'M290 -600 L318 0 C350 70 390 120 470 190 S600 300 680 352 L1500 900';
+  crear('path', { d: costa + ' L1500 -600 Z', fill: 'var(--water)' });
+  crear('path', { d: costa + ' L1500 -600 Z', fill: 'url(#olas)' });
+  crear('path', { d: costa, fill: 'none', stroke: '#1d3a55', 'stroke-width': 1.5 });
+  crear('text', { x: 548, y: 120, class: 'agua-txt', transform: 'rotate(33 548 120)' }).textContent = 'Río de la Plata';
+
   red.nodos.forEach((n, i) => {
     if (!POS[n.id]) {
       const a = 2 * Math.PI * i / red.nodos.length;
-      POS[n.id] = [320 + 200 * Math.cos(a), 260 + 200 * Math.sin(a)];
+      POS[n.id] = [340 + 210 * Math.cos(a), 280 + 210 * Math.sin(a)];
     }
   });
-  const R = 21;
+  const capaRutas = crear('g', {});
   for (const r of red.rutas) {
     const [x1, y1] = POS[r.origen], [x2, y2] = POS[r.destino];
     const d = Math.hypot(x2 - x1, y2 - y1), ux = (x2 - x1) / d, uy = (y2 - y1) / d;
-    const g = crear('g', {});
-    const linea = crear('line', { x1: x1 + ux * R, y1: y1 + uy * R, x2: x2 - ux * (R + 2), y2: y2 - uy * (R + 2),
-      stroke: 'var(--edge)', 'stroke-width': 2.5, 'marker-end': 'url(#f)' }, g);
-    const mx = (x1 + x2) / 2 - uy * 11, my = (y1 + y2) / 2 + ux * 11;
-    const fondo = crear('rect', { x: mx - 12, y: my - 9, width: 24, height: 17, rx: 4, fill: 'var(--panel)' }, g);
-    const txt = crear('text', { x: mx, y: my + 4, 'text-anchor': 'middle', 'font-size': 12,
-      fill: 'var(--muted)' }, g);
-    txt.textContent = r.km;
-    elRuta[clave(r.origen, r.destino)] = { linea, txt, fondo };
+    const g = crear('g', {}, capaRutas);
+    const sx = x1 + ux * 22, sy = y1 + uy * 22, ex = x2 - ux * 24, ey = y2 - uy * 24;
+    const base = crear('line', { x1: sx, y1: sy, x2: ex, y2: ey, class: 'ruta-base', 'marker-end': 'url(#f-base)' }, g);
+    const flujo = crear('line', { x1: sx, y1: sy, x2: ex, y2: ey, class: 'ruta-flujo' }, g);
+    const mx = (x1 + x2) / 2 - uy * 13, my = (y1 + y2) / 2 + ux * 13;
+    crear('rect', { x: mx - 13, y: my - 8, width: 26, height: 16, rx: 3, class: 'km-bg' }, g);
+    crear('text', { x: mx, y: my + 4, 'text-anchor': 'middle', class: 'km' }, g).textContent = fmt(r.km);
+    elRuta[clave(r.origen, r.destino)] = { g, base, flujo, origen: r.origen };
   }
+  const capaNodos = crear('g', {});
   for (const n of red.nodos) {
     const [x, y] = POS[n.id];
-    const g = crear('g', { class: 'nodo', tabindex: 0 });
-    const color = n.tipo === 'CENTRO' ? 'var(--centro)' : 'var(--deposito)';
-    const c = crear('circle', { cx: x, cy: y, r: R, fill: color, stroke: 'var(--panel)', 'stroke-width': 3 }, g);
-    const t = crear('text', { x, y: y + 4, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 700, fill: '#fff' }, g);
-    t.textContent = n.id;
-    const badge = crear('text', { x: x + R - 2, y: y - R + 2, 'text-anchor': 'middle', 'font-size': 13,
-      'font-weight': 700, fill: 'var(--accent)' }, g);
-    crear('title', {}, g).textContent = n.nombre;
-    g.addEventListener('click', () => clicNodo(n.id));
-    elNodo[n.id] = { c, color, badge };
+    const centro = n.tipo === 'CENTRO';
+    const color = centro ? '#5b9dff' : '#43c58a';
+    const g = crear('g', { class: 'nodo', tabindex: 0, role: 'button', 'aria-label': n.nombre }, capaNodos);
+    const halo = crear('circle', { cx: x, cy: y, r: 30, fill: color, opacity: .25, filter: 'url(#brillo)', class: 'halo' }, g);
+    const cuerpo = centro
+      ? crear('rect', { x: x - 19, y: y - 19, width: 38, height: 38, rx: 7, fill: '#15243a', stroke: color, 'stroke-width': 2, class: 'cuerpo' }, g)
+      : crear('circle', { cx: x, cy: y, r: 18, fill: '#12291f', stroke: color, 'stroke-width': 2, class: 'cuerpo' }, g);
+    crear('text', { x, y: y + 4.5, 'text-anchor': 'middle', class: 'id' }, g).textContent = n.id;
+    crear('text', { x, y: y + 36, 'text-anchor': 'middle', class: 'nom' }, g).textContent = corto(n.id);
+    const ficha = crear('g', { opacity: 0 }, g);
+    crear('circle', { cx: x + 19, cy: y - 19, r: 10, fill: TONO.amber }, ficha);
+    const orden = crear('text', { x: x + 19, y: y - 15, 'text-anchor': 'middle', class: 'orden' }, ficha);
+    g.addEventListener('click', ev => clicNodo(n.id, ev));
+    g.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); clicNodo(n.id, ev); } });
+    elNodo[n.id] = { g, cuerpo, halo, color, fondo: centro ? '#15243a' : '#12291f', ficha, orden };
   }
+  capaCamiones = crear('g', {});
 }
 
 function limpiar() {
   animacion++;
+  capaCamiones.innerHTML = '';
   for (const id in elNodo) {
-    elNodo[id].c.setAttribute('fill', elNodo[id].color);
-    elNodo[id].c.setAttribute('stroke', 'var(--panel)');
-    elNodo[id].badge.textContent = '';
+    const e = elNodo[id];
+    e.cuerpo.setAttribute('stroke', e.color); e.cuerpo.setAttribute('fill', e.fondo);
+    e.g.classList.remove('foco'); e.halo.setAttribute('fill', e.color);
+    e.ficha.setAttribute('opacity', 0);
   }
   for (const k in elRuta) {
-    elRuta[k].linea.setAttribute('stroke', 'var(--edge)');
-    elRuta[k].linea.setAttribute('stroke-width', 2.5);
-    elRuta[k].linea.setAttribute('marker-end', 'url(#f)');
-    elRuta[k].linea.removeAttribute('stroke-dasharray');
-    elRuta[k].txt.setAttribute('fill', 'var(--muted)');
+    const r = elRuta[k];
+    r.g.classList.remove('ruta-on');
+    r.base.style.stroke = ''; r.base.style.opacity = ''; r.base.setAttribute('marker-end', 'url(#f-base)');
+    r.flujo.style.opacity = 0;
   }
 }
-function marcarRuta(a, b, estilo) {
-  // Para el arbol (no dirigido) la arista puede estar guardada en cualquier sentido.
-  const r = elRuta[clave(a, b)] || elRuta[clave(b, a)];
+function marcarRuta(a, b, tono) {
+  const r = elRuta[clave(a, b)] || elRuta[clave(b, a)];  // el arbol no tiene sentido
   if (!r) return;
-  r.linea.setAttribute('stroke', estilo === 'jugador' ? 'var(--accent)' : 'var(--path)');
-  r.linea.setAttribute('stroke-width', 5);
-  r.linea.setAttribute('marker-end', 'url(#fp)');
-  if (estilo === 'jugador') r.linea.setAttribute('stroke-dasharray', '8 5');
-  else r.linea.removeAttribute('stroke-dasharray');
-  r.txt.setAttribute('fill', 'var(--ink)');
+  r.g.classList.add('ruta-on');
+  r.base.style.stroke = TONO[tono]; r.base.style.opacity = .4;
+  r.base.setAttribute('marker-end', `url(#f-${tono})`);
+  r.flujo.style.stroke = TONO[tono]; r.flujo.style.opacity = 1;
+  r.flujo.style.animationDirection = r.origen === a ? '' : 'reverse';
 }
-function resaltarNodo(id, color) {
-  if (elNodo[id]) elNodo[id].c.setAttribute('fill', color);
+function marcarNodo(id, tono, orden) {
+  const e = elNodo[id]; if (!e) return;
+  e.cuerpo.setAttribute('stroke', TONO[tono]);
+  e.halo.setAttribute('fill', TONO[tono]); e.g.classList.add('foco');
+  if (orden !== undefined) { e.orden.textContent = orden; e.ficha.setAttribute('opacity', 1); }
 }
-async function pintarCamino(vertices, estilo, ms = 350) {
-  const yo = animacion;
-  resaltarNodo(vertices[0], estilo === 'jugador' ? 'var(--accent)' : 'var(--path)');
+
+// Camion que recorre una lista de nodos sobre el mapa.
+function camion(tono) {
+  const c = TONO[tono];
+  const g = crear('g', { opacity: 0 }, capaCamiones);
+  g.innerHTML = `<g transform="translate(-13 -9)">
+      <rect x="0" y="1" width="17" height="14" rx="2" fill="${c}"/>
+      <path d="M18 4 h4.5 l3.5 4.5 v6.5 h-8 z" fill="${c}"/>
+      <rect x="19.5" y="5.5" width="3.6" height="3.4" rx=".6" fill="#090c11" opacity=".75"/>
+      <circle cx="5" cy="16" r="2.3" fill="#090c11" stroke="${c}" stroke-width="1.2"/>
+      <circle cx="21" cy="16" r="2.3" fill="#090c11" stroke="${c}" stroke-width="1.2"/></g>`;
+  return g;
+}
+async function conducir(vertices, tono, msPorTramo = 520, alPasar) {
+  const yo = animacion, g = camion(tono);
+  const ubicar = (x, y, ang) => {
+    const espejo = Math.abs(ang) > 90 ? ' scale(1 -1)' : '';
+    g.setAttribute('transform', `translate(${x} ${y}) rotate(${ang})${espejo}`);
+  };
+  ubicar(...POS[vertices[0]], 0); g.setAttribute('opacity', 1);
   for (let i = 1; i < vertices.length; i++) {
-    await pausa(ms); if (yo !== animacion) return;
-    marcarRuta(vertices[i - 1], vertices[i], estilo);
-    resaltarNodo(vertices[i], estilo === 'jugador' ? 'var(--accent)' : 'var(--path)');
+    const [x1, y1] = POS[vertices[i - 1]], [x2, y2] = POS[vertices[i]];
+    const ang = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+    const t0 = performance.now();
+    await new Promise(fin => {
+      function paso(t) {
+        if (yo !== animacion) return fin();
+        const p = Math.min(1, (t - t0) / msPorTramo), e = p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+        ubicar(x1 + (x2 - x1) * e, y1 + (y2 - y1) * e, ang);
+        p < 1 ? requestAnimationFrame(paso) : fin();
+      }
+      requestAnimationFrame(paso);
+    });
+    if (yo !== animacion) return false;
+    if (alPasar) alPasar(vertices[i - 1], vertices[i], i);
+  }
+  return true;
+}
+
+// ---------------------------------------------------------------- modos
+function cambiarModo(m) {
+  modo = m;
+  document.querySelectorAll('.modos button').forEach(b => b.classList.toggle('on', b.dataset.modo === m));
+  document.querySelectorAll('.modo').forEach(s => s.classList.toggle('on', s.id === 'modo-' + m));
+  limpiar();
+  if (m === 'mision' && partida) pintarPartida();
+  if (m === 'carga') pintarCargaEnMapa();
+  if (m === 'lab') marcarSeleccionLab();
+}
+document.querySelectorAll('.modos button').forEach(b => b.addEventListener('click', () => cambiarModo(b.dataset.modo)));
+document.addEventListener('keydown', ev => {
+  if (ev.target.matches('input, select')) return;
+  const m = { 1: 'mision', 2: 'carga', 3: 'lab' }[ev.key];
+  if (m) cambiarModo(m);
+});
+function clicNodo(id, ev) {
+  if (modo === 'mision') jugar(id);
+  else if (modo === 'lab') {
+    const algo = ALGOS.find(a => a.id === algoActual);
+    if (ev.shiftKey && algo.destino) $('l-destino').value = id; else if (algo.origen) $('l-origen').value = id;
+    limpiar(); marcarSeleccionLab();
   }
 }
 
-// ---------- pestañas ----------
-let tabActual = 'juego';
-document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => {
-  document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('activo', x === b));
-  document.querySelectorAll('.seccion').forEach(s => s.classList.toggle('activa', s.id === 'tab-' + b.dataset.tab));
-  tabActual = b.dataset.tab;
-  limpiar(); mostrarError('');
-  if (tabActual === 'juego' && juego) repintarJuego();
-}));
-function clicNodo(id) {
-  if (tabActual === 'juego') jugar(id);
-  else if (tabActual === 'recorridos') { document.getElementById('rec-origen').value = id; }
-  else if (tabActual === 'arbol') { document.getElementById('prim-origen').value = id; }
+function estrellas(n) {
+  const s = i => `<svg viewBox="0 0 24 24"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2 6.3 20.3l1.2-6.4L2.8 9.5l6.4-.8z"
+      fill="${i < n ? TONO.amber : 'none'}" stroke="${i < n ? TONO.amber : '#2b3646'}" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+  return [0, 1, 2].map(s).join('');
+}
+function filaComp(etiqueta, valor, max, tono, texto, detalle) {
+  const pct = max ? 100 * valor / max : 0;
+  return `<div class="fila-comp"><span class="k">${etiqueta}</span>
+    <div class="pista"><div style="background:${tono}" data-w="${pct}"></div></div><span class="v">${texto}</span>
+    ${detalle ? `<span class="det">${detalle}</span>` : ''}</div>`;
+}
+function animarBarras(cont) {
+  requestAnimationFrame(() => requestAnimationFrame(() =>
+    cont.querySelectorAll('.pista div').forEach(d => d.style.width = d.dataset.w + '%')));
 }
 
-// ---------- recorridos ----------
-document.querySelectorAll('[data-rec]').forEach(b => b.addEventListener('click', async () => {
-  const tipo = b.dataset.rec, origen = document.getElementById('rec-origen').value;
-  try {
-    mostrarError(''); limpiar();
-    const orden = await api(`/api/grafo/${tipo}?origen=${origen}`);
-    const caja = document.getElementById('rec-resultado');
-    caja.innerHTML = `<b>${tipo.toUpperCase()}</b> desde ${origen}: ${orden.length} nodos alcanzados<div class="orden">${orden.map(v => `<span>${v}</span>`).join('')}</div>`;
-    const chips = caja.querySelectorAll('.orden span'), yo = animacion;
-    for (let i = 0; i < orden.length; i++) {
-      if (yo !== animacion) return;
-      resaltarNodo(orden[i], 'var(--visit)');
-      elNodo[orden[i]].badge.textContent = i + 1;
-      chips[i].classList.add('on');
-      await pausa(450);
-    }
-  } catch (e) { mostrarError(e.message); }
-}));
+// ---------------------------------------------------------------- MISION
+let partida = null, mision = 0, puntos = 0, racha = 0;
+let record = guardado.leer('record', 0);
+$('m-record').textContent = record;
 
-// ---------- camino minimo ----------
-document.querySelectorAll('[data-cam]').forEach(b => b.addEventListener('click', async () => {
-  const alg = b.dataset.cam;
-  const o = document.getElementById('cam-origen').value, d = document.getElementById('cam-destino').value;
-  const caja = document.getElementById('cam-resultado');
-  try {
-    mostrarError(''); limpiar();
-    const c = await api(`/api/grafo/${alg}?origen=${o}&destino=${d}`);
-    caja.textContent = `${alg === 'ucs' ? 'UCS' : 'Dijkstra'}: ${c.vertices.join(' → ')}\n${c.costoTotal} km · ${c.nodosExpandidos} nodos expandidos`;
-    pintarCamino(c.vertices, 'algoritmo');
-  } catch (e) { caja.textContent = e.message; }
-}));
-
-// ---------- arbol minimo ----------
-async function mostrarArbol(nombreAlg, url) {
-  const caja = document.getElementById('arbol-resultado');
-  try {
-    mostrarError(''); limpiar();
-    const mst = await api(url);
-    caja.textContent = `${nombreAlg}: ${mst.aristas.length} aristas, ${mst.costoTotal} km en total.\nOrden en que las eligió:`;
-    const yo = animacion;
-    for (const a of mst.aristas) {
-      if (yo !== animacion) return;
-      marcarRuta(a.origen, a.destino, 'algoritmo');
-      resaltarNodo(a.origen, 'var(--path)'); resaltarNodo(a.destino, 'var(--path)');
-      caja.textContent += ` ${a.origen}–${a.destino} (${a.costo})`;
-      await pausa(450);
-    }
-  } catch (e) { mostrarError(e.message); }
-}
-document.getElementById('btn-prim').addEventListener('click', () =>
-  mostrarArbol('Prim', '/api/grafo/prim?origen=' + document.getElementById('prim-origen').value));
-document.getElementById('btn-kruskal').addEventListener('click', () =>
-  mostrarArbol('Kruskal', '/api/grafo/kruskal'));
-
-// ---------- rutas (backtracking) ----------
-document.getElementById('btn-rutas').addEventListener('click', async () => {
-  const o = document.getElementById('rut-origen').value, d = document.getElementById('rut-destino').value;
-  const tope = document.getElementById('rut-tope').value || 1000;
-  const caja = document.getElementById('rut-resultado'), lista = document.getElementById('rut-lista');
-  try {
-    mostrarError(''); limpiar(); lista.innerHTML = '';
-    const r = await api(`/api/grafo/rutas?origen=${o}&destino=${d}&costoMaximo=${tope}&saltosMaximos=10`);
-    caja.textContent = `${r.rutas.length} rutas de hasta ${tope} km. Hacé clic en una para verla.`;
-    r.rutas.forEach(ruta => {
-      const li = document.createElement('li');
-      li.textContent = `${ruta.vertices.join(' → ')} · ${ruta.costoTotal} km`;
-      li.addEventListener('click', () => {
-        lista.querySelectorAll('li').forEach(x => x.classList.toggle('on', x === li));
-        limpiar(); pintarCamino(ruta.vertices, 'algoritmo', 200);
-      });
-      lista.appendChild(li);
-    });
-  } catch (e) { mostrarError(e.message); }
-});
-
-// ---------- juego: Ganale a Dijkstra ----------
-let juego = null, ganadas = 0, jugadas = 0;
-const conSalida = () => [...new Set(red.rutas.map(r => r.origen))];
-const kmDe = (a, b) => (red.rutas.find(r => r.origen === a && r.destino === b) || {}).km;
-
-async function nuevaPartida() {
-  mostrarError(''); limpiar();
-  const origenes = conSalida();
-  // Se sortea un par que tenga camino de al menos 2 tramos; el camino lo dice Dijkstra.
+async function nuevaMision() {
+  limpiar();
+  $('m-resultado').classList.remove('on');
+  const origenes = [...new Set(red.rutas.map(r => r.origen))];
+  // Se sortea un par con camino de al menos 2 tramos; el optimo lo dice Dijkstra.
   for (let intento = 0; intento < 40; intento++) {
     const o = origenes[Math.floor(Math.random() * origenes.length)];
     const d = red.nodos[Math.floor(Math.random() * red.nodos.length)].id;
@@ -395,138 +593,298 @@ async function nuevaPartida() {
     try {
       const mejor = await api(`/api/grafo/dijkstra?origen=${o}&destino=${d}`);
       if (mejor.vertices.length < 3) continue;
-      juego = { origen: o, destino: d, mejor, ruta: [o], terminado: false };
-      repintarJuego();
+      mision++;
+      partida = { origen: o, destino: d, mejor, ruta: [o], terminada: false };
+      $('m-kicker').textContent = 'Misión ' + String(mision).padStart(2, '0');
+      $('m-titulo').textContent = 'Entrega en ' + corto(d);
+      $('m-sub').textContent = `Salís de ${nodo(o).nombre}. Llegá a ${nodo(d).nombre} con la menor cantidad de km.`;
+      $('m-a').textContent = o; $('m-b').textContent = d; $('m-trayecto').hidden = false;
+      $('m-juego').hidden = false;
+      pintarPartida();
       return;
     } catch (e) { /* inalcanzable: se sortea otro par */ }
   }
-  mostrarError('No se pudo sortear un par con camino. ¿Está cargada la red?');
+  avisar('No se pudo sortear una misión. ¿Está cargada la red?');
 }
-function costoRuta(ruta) {
-  let t = 0;
-  for (let i = 1; i < ruta.length; i++) t += kmDe(ruta[i - 1], ruta[i]);
-  return t;
-}
-function repintarJuego() {
+function kmRuta(ruta) { let t = 0; for (let i = 1; i < ruta.length; i++) t += kmDe(ruta[i - 1], ruta[i]); return t; }
+function pintarPartida() {
   limpiar();
-  const { origen, destino, ruta } = juego;
-  elNodo[origen].c.setAttribute('stroke', 'var(--accent)');
-  elNodo[destino].c.setAttribute('stroke', 'var(--path)');
-  elNodo[origen].badge.textContent = 'A'; elNodo[destino].badge.textContent = 'B';
-  for (let i = 1; i < ruta.length; i++) marcarRuta(ruta[i - 1], ruta[i], 'jugador');
-  ruta.forEach(v => resaltarNodo(v, 'var(--accent)'));
-  if (!juego.terminado) {
-    const ult = ruta[ruta.length - 1];
-    const salidas = red.rutas.filter(r => r.origen === ult).map(r => r.destino);
-    document.getElementById('juego-estado').textContent =
-      `Llevá el paquete de ${origen} (${nombre(origen)}) a ${destino} (${nombre(destino)}).\n` +
-      `Tu ruta: ${ruta.join(' → ')} · ${costoRuta(ruta)} km\n` +
-      (salidas.length ? `Desde ${ult} podés ir a: ${salidas.join(', ')}` : `${ult} no tiene salidas: deshacé.`);
+  const { destino, ruta, terminada } = partida;
+  for (let i = 1; i < ruta.length; i++) marcarRuta(ruta[i - 1], ruta[i], 'amber');
+  ruta.forEach((v, i) => marcarNodo(v, 'amber', i === 0 ? 'A' : undefined));
+  marcarNodo(destino, 'coral', 'B');
+  $('m-km').innerHTML = fmt(kmRuta(ruta)) + '<small>km</small>';
+  $('m-tramos').textContent = ruta.length - 1;
+  $('m-deshacer').disabled = terminada || ruta.length < 2;
+  const ult = ruta[ruta.length - 1];
+  $('m-desde').textContent = terminada ? '—' : ult;
+  const cont = $('m-salidas');
+  if (terminada) { cont.innerHTML = '<div class="vacio">Misión terminada.</div>'; return; }
+  const salidas = red.rutas.filter(r => r.origen === ult);
+  cont.innerHTML = salidas.length ? '' : `<div class="vacio">${ult} no tiene salidas. Deshacé el último tramo.</div>`;
+  for (const s of salidas) {
+    const b = document.createElement('button');
+    b.className = 'salida';
+    b.innerHTML = `<b>${s.destino}</b><span>${fmt(s.km)} km</span>`;
+    b.addEventListener('click', () => jugar(s.destino));
+    cont.appendChild(b);
   }
 }
-async function jugar(id) {
-  if (!juego || juego.terminado) return;
-  const ult = juego.ruta[juego.ruta.length - 1];
-  if (kmDe(ult, id) === undefined) {
-    document.getElementById('juego-estado').textContent += `\n✋ No hay ruta de ${ult} a ${id} en ese sentido.`;
-    return;
-  }
-  if (juego.ruta.includes(id)) {
-    document.getElementById('juego-estado').textContent += `\n✋ Ya pasaste por ${id}.`;
-    return;
-  }
-  juego.ruta.push(id);
-  repintarJuego();
-  if (id === juego.destino) {
-    juego.terminado = true; jugadas++;
-    const tuyo = costoRuta(juego.ruta), mejor = juego.mejor.costoTotal;
-    const gano = tuyo <= mejor;
-    if (gano) ganadas++;
-    document.getElementById('juego-marcador').textContent = `Ganadas ${ganadas} · Jugadas ${jugadas}`;
-    document.getElementById('juego-estado').innerHTML =
-      `Tu ruta: ${juego.ruta.join(' → ')} · <b>${tuyo} km</b>\n` +
-      `Dijkstra: ${juego.mejor.vertices.join(' → ')} · <b>${mejor} km</b>\n` +
-      (gano ? '<span class="ok">¡Empataste con el óptimo! 🎉</span>'
-            : `<span class="mal">Te sobraron ${tuyo - mejor} km.</span> Mirá en rojo el camino de Dijkstra.`);
-    await pausa(500);
-    pintarCamino(juego.mejor.vertices, 'algoritmo');
-  }
+function jugar(id) {
+  if (!partida) { avisar('Tocá "Nueva misión" para empezar.'); return; }
+  if (partida.terminada) return;
+  const ult = partida.ruta[partida.ruta.length - 1];
+  if (kmDe(ult, id) === undefined) { avisar(`No hay ruta de ${ult} a ${id} en ese sentido.`); return; }
+  if (partida.ruta.includes(id)) { avisar(`Ya pasaste por ${id}.`); return; }
+  partida.ruta.push(id);
+  pintarPartida();
+  if (id === partida.destino) terminarMision();
 }
-document.getElementById('juego-nuevo').addEventListener('click', nuevaPartida);
-document.getElementById('juego-deshacer').addEventListener('click', () => {
-  if (juego && !juego.terminado && juego.ruta.length > 1) { juego.ruta.pop(); repintarJuego(); }
+async function terminarMision() {
+  partida.terminada = true;
+  pintarPartida();
+  const tuyo = kmRuta(partida.ruta), mejor = partida.mejor.costoTotal;
+  const exceso = tuyo - mejor;
+  const n = exceso <= 0 ? 3 : (exceso / mejor <= .15 ? 2 : 1);
+  const gana = Math.round(100 * Math.min(1, mejor / tuyo)) + (n === 3 ? 25 * racha : 0);
+  racha = n === 3 ? racha + 1 : 0;
+  puntos += gana;
+  if (puntos > record) { record = puntos; guardado.escribir('record', record); }
+  $('m-puntos').textContent = puntos; $('m-racha').textContent = racha; $('m-record').textContent = record;
+  $('m-partidas').textContent = mision + (mision === 1 ? ' misión' : ' misiones');
+  $('m-juego').hidden = true;
+
+  // Los dos camiones salen juntos: el tuyo por tu ruta, el de Dijkstra por el optimo.
+  const yo = animacion;
+  await Promise.all([
+    conducir(partida.ruta, 'amber', 480),
+    pausa(250).then(() => conducir(partida.mejor.vertices, 'coral', 480,
+      (a, b) => { marcarRuta(a, b, 'coral'); marcarNodo(b, 'coral'); }))
+  ]);
+  if (yo !== animacion) return;
+  capaCamiones.innerHTML = '';  // los camiones ya llegaron: se sacan para que se lea el destino
+  $('r-kicker').textContent = `+${gana} puntos`;
+  const t = $('r-titulo');
+  t.textContent = n === 3 ? 'Ruta óptima' : `+${fmt(exceso)} km de más`;
+  t.className = 'titulo' + (n === 3 ? ' ok' : '');
+  $('r-estrellas').innerHTML = estrellas(n);
+  const max = Math.max(tuyo, mejor);
+  const comp = $('r-comp');
+  comp.innerHTML =
+    filaComp('Vos', tuyo, max, 'var(--amber)', fmt(tuyo) + ' km', partida.ruta.join(' → ')) +
+    filaComp('Dijkstra', mejor, max, 'var(--coral)', fmt(mejor) + ' km',
+      partida.mejor.vertices.join(' → ') + ` · ${partida.mejor.nodosExpandidos} nodos expandidos`);
+  $('m-resultado').classList.add('on');
+  animarBarras(comp);
+}
+$('m-nueva').addEventListener('click', nuevaMision);
+$('r-siguiente').addEventListener('click', nuevaMision);
+$('m-deshacer').addEventListener('click', () => {
+  if (partida && !partida.terminada && partida.ruta.length > 1) { partida.ruta.pop(); pintarPartida(); }
 });
 
-// ---------- juego: Cargá el camión ----------
-let paquetes = [], elegidos = new Set();
-function capacidad() { return Number(document.getElementById('cap').value) || 0; }
-function dibujarPaquetes() {
-  const cont = document.getElementById('paquetes');
+// ---------------------------------------------------------------- CARGA
+let cap = 10;
+const elegidos = new Set();
+const colorPaq = id => COLORES_PAQ[paquetes.findIndex(p => p.id === id) % COLORES_PAQ.length];
+function pintarCarga() {
+  $('c-cap').textContent = cap + ' kg';
+  const cont = $('c-paquetes');
   cont.innerHTML = '';
+  const maxRatio = Math.max(...paquetes.map(p => p.valor / p.peso));
   for (const p of paquetes) {
     const b = document.createElement('button');
     b.className = 'paq' + (elegidos.has(p.id) ? ' on' : '');
-    b.innerHTML = `<b>${p.id} · ${p.nombre}</b><small>${p.peso} kg · ${p.valor} USD</small>`;
+    b.innerHTML = `<div class="tope"><span class="tag" style="background:${colorPaq(p.id)}">${p.id}</span>
+        <span class="check">${elegidos.has(p.id) ? '<svg width="10" height="10" viewBox="0 0 10 10"><path d="M1.5 5.2l2.3 2.3L8.5 2.6" fill="none" stroke="#1a1206" stroke-width="1.8"/></svg>' : ''}</span></div>
+      <div class="nombre">${p.nombre}</div>
+      <div class="datos"><span>${fmt(p.peso)} kg</span><span>${fmt(p.valor)} USD</span><span>${p.nodoId}</span></div>
+      <div class="ratio"><div style="width:${100 * (p.valor / p.peso) / maxRatio}%"></div></div>`;
     b.addEventListener('click', () => {
       elegidos.has(p.id) ? elegidos.delete(p.id) : elegidos.add(p.id);
-      dibujarPaquetes();
+      $('c-resultado').classList.remove('on');
+      pintarCarga(); pintarCargaEnMapa();
     });
     cont.appendChild(b);
   }
-  const peso = paquetes.filter(p => elegidos.has(p.id)).reduce((t, p) => t + p.peso, 0);
-  const valor = paquetes.filter(p => elegidos.has(p.id)).reduce((t, p) => t + p.valor, 0);
-  const cap = capacidad();
-  document.getElementById('camion-carga').textContent =
-    `${peso} / ${cap} kg · ${valor} USD` + (peso > cap ? ' · ¡te pasaste de peso!' : '');
-  const barra = document.getElementById('camion-barra');
-  barra.classList.toggle('lleno', peso > cap);
-  barra.firstElementChild.style.width = Math.min(100, cap ? 100 * peso / cap : 0) + '%';
+  const sel = paquetes.filter(p => elegidos.has(p.id));
+  const peso = sel.reduce((t, p) => t + p.peso, 0), valor = sel.reduce((t, p) => t + p.valor, 0);
+  const bodega = $('c-bodega');
+  bodega.innerHTML = '';
+  const escala = Math.max(cap, peso);
+  for (const p of sel) {
+    const d = document.createElement('div');
+    d.className = 'bulto';
+    d.style.width = `calc(${100 * p.peso / escala}% - 3px)`;
+    d.style.background = colorPaq(p.id);
+    d.textContent = p.id;
+    bodega.appendChild(d);
+  }
+  bodega.classList.toggle('exceso', peso > cap);
+  $('c-peso').innerHTML = peso > cap ? `<span class="exc">${fmt(peso)} / ${cap} kg · excedido</span>` : `${fmt(peso)} / ${cap} kg`;
+  $('c-valor').textContent = fmt(valor) + ' USD';
   return { peso, valor };
 }
-document.getElementById('cap').addEventListener('input', dibujarPaquetes);
-document.getElementById('camion-vaciar').addEventListener('click', () => {
-  elegidos.clear(); dibujarPaquetes(); document.getElementById('camion-resultado').textContent = '';
-});
-document.getElementById('camion-comparar').addEventListener('click', async () => {
-  const { peso, valor } = dibujarPaquetes(), cap = capacidad();
-  const caja = document.getElementById('camion-resultado');
+function pintarCargaEnMapa() {
+  if (modo !== 'carga') return;
+  limpiar();
+  for (const p of paquetes) if (elegidos.has(p.id)) marcarNodo(p.nodoId, 'amber', p.id.slice(1));
+}
+function cambiarCap(d) { cap = Math.max(1, Math.min(40, cap + d)); $('c-resultado').classList.remove('on'); pintarCarga(); }
+$('c-menos').addEventListener('click', () => cambiarCap(-1));
+$('c-mas').addEventListener('click', () => cambiarCap(1));
+$('c-vaciar').addEventListener('click', () => { elegidos.clear(); $('c-resultado').classList.remove('on'); pintarCarga(); pintarCargaEnMapa(); });
+$('c-comparar').addEventListener('click', async () => {
+  const { peso, valor } = pintarCarga();
   try {
-    mostrarError('');
-    const [g, pd] = await Promise.all([
-      api('/api/seleccion/greedy?capacidad=' + cap),
-      api('/api/seleccion/dinamica?capacidad=' + Math.floor(cap))
-    ]);
-    const ids = r => r.elegidos.map(p => p.id).join(', ') || 'nada';
-    let veredicto;
-    if (peso > cap) veredicto = '<span class="mal">Tu carga no vale: te pasaste de peso.</span>';
-    else if (valor >= pd.valorTotal) veredicto = '<span class="ok">¡Llegaste al óptimo! 🎉</span>';
-    else if (valor >= g.valorTotal) veredicto = `<span class="ok">Le ganaste (o empataste) a Greedy.</span> Al óptimo le faltan ${pd.valorTotal - valor} USD.`;
-    else veredicto = `<span class="mal">Greedy te ganó por ${g.valorTotal - valor} USD.</span>`;
-    caja.innerHTML =
-      `Vos: ${[...elegidos].join(', ') || 'nada'} · <b>${valor} USD</b> (${peso} kg)\n` +
-      `Greedy (por valor/kg): ${ids(g)} · <b>${g.valorTotal} USD</b> (${g.pesoTotal} kg)\n` +
-      `Programación dinámica: ${ids(pd)} · <b>${pd.valorTotal} USD</b> (${pd.pesoTotal} kg)\n` + veredicto;
-  } catch (e) { caja.textContent = e.message; }
+    const [g, pd] = await Promise.all([api('/api/seleccion/greedy?capacidad=' + cap), api('/api/seleccion/dinamica?capacidad=' + cap)]);
+    const valido = peso <= cap;
+    const tuyo = valido ? valor : 0;
+    const n = !valido ? 0 : tuyo >= pd.valorTotal ? 3 : tuyo >= g.valorTotal ? 2 : 1;
+    const t = $('cr-titulo');
+    t.textContent = !valido ? 'Camión excedido' : n === 3 ? 'Carga óptima' : n === 2 ? (tuyo > g.valorTotal ? 'Le ganaste a Greedy' : 'Empate con Greedy') : 'Greedy te ganó';
+    t.className = 'titulo' + (n === 3 ? ' ok' : '');
+    $('cr-estrellas').innerHTML = estrellas(n);
+    const ids = r => r.elegidos.map(p => p.id).join(' · ') || 'vacío';
+    const max = Math.max(tuyo, g.valorTotal, pd.valorTotal);
+    const comp = $('cr-comp');
+    comp.innerHTML =
+      filaComp('Vos', tuyo, max, 'var(--amber)', fmt(tuyo) + ' USD',
+        valido ? `${[...elegidos].join(' · ') || 'vacío'} · ${fmt(peso)} kg` : `no sale: ${fmt(peso)} kg en un camión de ${cap}`) +
+      filaComp('Greedy', g.valorTotal, max, 'var(--teal)', fmt(g.valorTotal) + ' USD', `${ids(g)} · ${fmt(g.pesoTotal)} kg · por USD/kg`) +
+      filaComp('Prog. dinámica', pd.valorTotal, max, 'var(--coral)', fmt(pd.valorTotal) + ' USD', `${ids(pd)} · ${fmt(pd.pesoTotal)} kg · óptimo`);
+    $('c-resultado').classList.add('on');
+    animarBarras(comp);
+    $('c-resultado').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch (e) { avisar(e.message); }
 });
 
-// ---------- arranque ----------
-(async function () {
+// ---------------------------------------------------------------- LABORATORIO
+const ALGOS = [
+  { id: 'bfs', nombre: 'BFS', o: 'O(V + E)', desc: 'Recorre por niveles: primero los vecinos, después los vecinos de esos.', origen: true },
+  { id: 'dfs', nombre: 'DFS', o: 'O(V + E)', desc: 'Baja por una rama hasta el fondo antes de volver.', origen: true },
+  { id: 'dijkstra', nombre: 'Dijkstra', o: 'O((V + E) log V)', desc: 'Camino más corto con distancias positivas.', origen: true, destino: true },
+  { id: 'ucs', nombre: 'UCS', o: 'O((V + E) log V)', desc: 'Como Dijkstra, pero frena apenas llega al destino.', origen: true, destino: true },
+  { id: 'prim', nombre: 'Prim', o: 'O(E log V)', desc: 'Árbol de recubrimiento mínimo creciendo desde un nodo.', origen: true },
+  { id: 'kruskal', nombre: 'Kruskal', o: 'O(E log E)', desc: 'Árbol mínimo tomando primero las aristas más cortas.' },
+  { id: 'rutas', nombre: 'Backtracking', o: 'O(V!)', desc: 'Todas las rutas simples, podando las que se pasan del tope.', origen: true, destino: true, tope: true }
+];
+let algoActual = 'bfs';
+function pintarAlgos() {
+  const cont = $('l-algos');
+  cont.innerHTML = '';
+  for (const a of ALGOS) {
+    const b = document.createElement('button');
+    b.className = 'algo' + (a.id === algoActual ? ' on' : '');
+    b.innerHTML = `<b>${a.nombre}</b><code>${a.o}</code><span>${a.desc}</span>`;
+    b.addEventListener('click', () => { algoActual = a.id; pintarAlgos(); limpiar(); marcarSeleccionLab(); });
+    cont.appendChild(b);
+  }
+  const a = ALGOS.find(x => x.id === algoActual);
+  $('l-c-origen').hidden = !a.origen; $('l-c-destino').hidden = !a.destino; $('l-c-tope').hidden = !a.tope;
+  $('l-ayuda').hidden = !a.origen;
+}
+function marcarSeleccionLab() {
+  const a = ALGOS.find(x => x.id === algoActual);
+  if (a.origen) marcarNodo($('l-origen').value, 'teal', 'A');
+  if (a.destino) marcarNodo($('l-destino').value, 'coral', 'B');
+}
+['l-origen', 'l-destino'].forEach(id => $(id).addEventListener('change', () => { limpiar(); marcarSeleccionLab(); }));
+function linea(cons, i, html, cls = '') {
+  const d = document.createElement('div');
+  d.innerHTML = `<span class="n">${String(i).padStart(2, '0')}</span><span class="t ${cls}">${html}</span>`;
+  cons.appendChild(d); cons.scrollTop = cons.scrollHeight;
+  return d;
+}
+function resumen(pares) {
+  $('l-resumen').innerHTML = pares.map(([k, v]) => `<div><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+}
+$('l-ejecutar').addEventListener('click', async () => {
+  const a = ALGOS.find(x => x.id === algoActual);
+  const o = $('l-origen').value, d = $('l-destino').value, tope = $('l-tope').value || 1000;
+  const cons = $('l-consola');
+  limpiar(); cons.innerHTML = '';
+  $('l-salida').hidden = false; $('l-salida-k').textContent = 'Salida · ' + a.nombre;
+  $('l-salida').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  const yo = animacion;
   try {
-    red = await api('/api/grafo/red');
-    paquetes = await api('/api/seleccion/mergesort?criterio=peso');
+    if (a.id === 'bfs' || a.id === 'dfs') {
+      const orden = await api(`/api/grafo/${a.id}?origen=${o}`);
+      resumen([['Origen', o], ['Alcanzados', orden.length], ['Sin llegar', red.nodos.length - orden.length]]);
+      for (let i = 0; i < orden.length; i++) {
+        if (yo !== animacion) return;
+        marcarNodo(orden[i], 'teal', i + 1);
+        linea(cons, i + 1, `visita <em>${orden[i]}</em> · ${nodo(orden[i]).nombre}`);
+        await pausa(380);
+      }
+    } else if (a.id === 'dijkstra' || a.id === 'ucs') {
+      const c = await api(`/api/grafo/${a.id}?origen=${o}&destino=${d}`);
+      resumen([['Distancia', fmt(c.costoTotal) + ' km'], ['Tramos', c.vertices.length - 1], ['Expandidos', c.nodosExpandidos]]);
+      marcarSeleccionLab();
+      linea(cons, 0, `sale de <em>${o}</em>`);
+      await conducir(c.vertices, 'teal', 520, (x, y, i) => {
+        const fin = i === c.vertices.length - 1;
+        marcarRuta(x, y, 'teal'); marcarNodo(y, fin ? 'coral' : 'teal');
+        linea(cons, i, `${x} → <em>${y}</em> · ${fmt(kmDe(x, y))} km`, fin ? 'dest' : '');
+      });
+      if (yo === animacion) capaCamiones.innerHTML = '';
+    } else if (a.id === 'prim' || a.id === 'kruskal') {
+      const mst = await api(a.id === 'prim' ? `/api/grafo/prim?origen=${o}` : '/api/grafo/kruskal');
+      resumen([['Aristas', mst.aristas.length], ['Total', fmt(mst.costoTotal) + ' km'], ['Nodos', red.nodos.length]]);
+      let acum = 0;
+      for (let i = 0; i < mst.aristas.length; i++) {
+        if (yo !== animacion) return;
+        const e = mst.aristas[i]; acum += e.costo;
+        marcarRuta(e.origen, e.destino, 'teal'); marcarNodo(e.origen, 'teal'); marcarNodo(e.destino, 'teal');
+        linea(cons, i + 1, `elige <em>${e.origen}–${e.destino}</em> · ${fmt(e.costo)} km · total ${fmt(acum)}`);
+        await pausa(420);
+      }
+    } else {
+      const r = await api(`/api/grafo/rutas?origen=${o}&destino=${d}&costoMaximo=${tope}&saltosMaximos=10`);
+      resumen([['Rutas', r.rutas.length], ['Explorados', `${r.nodosExploradosConPoda}<small style="font-size:11px;color:var(--muted)"> / ${r.nodosExploradosSinPoda}</small>`],
+               ['Podadas', r.ramasPodadas]]);
+      marcarSeleccionLab();
+      if (!r.rutas.length) linea(cons, 0, 'no hay rutas dentro del tope');
+      r.rutas.forEach((ruta, i) => {
+        const el = linea(cons, i + 1, `${ruta.vertices.join(' → ')} · <em>${fmt(ruta.costoTotal)} km</em>`);
+        el.classList.add('ruta');
+        el.addEventListener('click', () => {
+          cons.querySelectorAll('.ruta').forEach(x => x.classList.toggle('on', x === el));
+          limpiar(); marcarSeleccionLab();
+          for (let j = 1; j < ruta.vertices.length; j++) marcarRuta(ruta.vertices[j - 1], ruta.vertices[j], 'teal');
+          conducir(ruta.vertices, 'teal', 380);
+        });
+      });
+      if (r.rutas.length) cons.querySelector('.ruta').click();
+    }
   } catch (e) {
-    mostrarError('No se pudo leer la API: ' + e.message + '. ¿Está levantada la app con Neo4j?');
+    resumen([['Estado', 'Error'], ['Origen', o], ['Destino', a.destino ? d : '—']]);
+    linea(cons, 0, e.message, 'dest');
+  }
+});
+
+// ---------------------------------------------------------------- arranque
+(async function () {
+  const est = $('estado-api');
+  try {
+    [red, paquetes] = await Promise.all([api('/api/grafo/red'), api('/api/seleccion/mergesort?criterio=peso')]);
+    est.className = 'estado-api ok';
+    est.querySelector('span').textContent = `API en línea · ${red.nodos.length} nodos · ${red.rutas.length} rutas`;
+  } catch (e) {
+    est.className = 'estado-api mal';
+    est.querySelector('span').textContent = 'API sin conexión';
+    avisar('No se pudo leer la API: ' + e.message + '. ¿Está levantada la app con Neo4j?');
     return;
   }
   dibujar();
   const ids = red.nodos.map(n => n.id);
-  for (const [sel, def] of [['rec-origen', 'CD'], ['cam-origen', 'CD'], ['cam-destino', 'QUI'],
-                            ['prim-origen', 'CD'], ['rut-origen', 'CD'], ['rut-destino', 'QUI']]) {
-    const s = document.getElementById(sel);
-    s.innerHTML = ids.map(i => `<option value="${i}">${i} · ${nombre(i)}</option>`).join('');
+  for (const [sel, def] of [['l-origen', 'CD'], ['l-destino', 'QUI']]) {
+    const s = $(sel);
+    s.innerHTML = ids.map(i => `<option value="${i}">${i} · ${corto(i)}</option>`).join('');
     if (ids.includes(def)) s.value = def;
   }
-  dibujarPaquetes();
+  pintarAlgos();
+  pintarCarga();
 })();
 </script>
 </body>
