@@ -312,15 +312,158 @@ dos vehículos pesan lo mismo, el paquete solo se prueba en el de menor índice.
 
 ---
 
-## Pendientes
+### GET /api/grafo/prim
 
-Las fichas de Prim, Kruskal, QuickSort, MergeSort y Greedy (Persona 2) se agregan acá a
-medida que cada algoritmo se implementa, con el mismo formato: descripción, parámetros,
-ejemplo real, errores, complejidad justificada y estructura de datos. Mientras tanto esos
-endpoints responden:
+Árbol de recubrimiento mínimo: el conjunto de rutas de menor distancia total que mantiene
+conectados todos los nodos de la red (tratada como no dirigida).
 
+**Parámetros:** `origen` (nodo desde el que crece el árbol)
+
+**Ejemplo:** `GET /api/grafo/prim?origen=CD`
+
+**Respuesta:**
 ```json
-{"estado":"PENDIENTE","detalle":"Todavia no esta implementado: Prim"}
+{"aristas":[
+  {"origen":"CD","destino":"CAB","costo":7.0},{"origen":"CAB","destino":"PAL","costo":6.0},
+  {"origen":"PAL","destino":"DN","costo":8.0},{"origen":"CD","destino":"DS","costo":10.0},
+  {"origen":"DS","destino":"AVE","costo":5.0},{"origen":"DN","destino":"SI","costo":12.0},
+  {"origen":"AVE","destino":"QUI","costo":12.0},{"origen":"CAB","destino":"DO","costo":12.0},
+  {"origen":"DO","destino":"MOR","costo":5.0}],
+ "costoTotal":77.0}
+```
+9 aristas = V − 1. Desde cualquier origen el costo es 77 km.
+
+**Errores:** 400 si el `origen` no existe; 422 si el grafo no es conexo.
+
+**Complejidad:** O(E log V) con heap. Cada arista se encola a lo sumo dos veces (una por
+cada extremo, porque el grafo no dirigido la guarda en las dos listas) y cada operación
+cuesta O(log E) = O(log V). Se eligió el heap y no la búsqueda lineal O(V²) porque la red
+es rala (E ≈ 1.5 V): 15·log 10 ≈ 50 operaciones contra 100.
+
+**Estructura usada:** `PriorityQueue` de aristas candidatas (origen, destino, costo) +
+`boolean[] enArbol`.
+
+---
+
+### GET /api/grafo/kruskal
+
+Mismo árbol de recubrimiento mínimo, construido ordenando todas las rutas por distancia y
+agregando los que no cierran ciclo.
+
+**Parámetros:** ninguno
+
+**Ejemplo:** `GET /api/grafo/kruskal`
+
+**Respuesta:**
+```json
+{"aristas":[
+  {"origen":"DS","destino":"AVE","costo":5.0},{"origen":"DO","destino":"MOR","costo":5.0},
+  {"origen":"PAL","destino":"CAB","costo":6.0},{"origen":"CD","destino":"CAB","costo":7.0},
+  {"origen":"DN","destino":"PAL","costo":8.0},{"origen":"CD","destino":"DS","costo":10.0},
+  {"origen":"DN","destino":"SI","costo":12.0},{"origen":"DO","destino":"CAB","costo":12.0},
+  {"origen":"AVE","destino":"QUI","costo":12.0}],
+ "costoTotal":77.0}
+```
+Cálculo a mano: rutas ordenadas 5, 5, 6, 7, 8, **9 (CD-PAL, ciclo)**, 10, **11 (CAB-DS,
+ciclo)**, 12, 12, 12 → se llega a 9 aristas y se corta.
+
+**Errores:** 422 si el grafo no es conexo (quedan varias componentes).
+
+**Complejidad:** O(E log E), dominada por ordenar las aristas con el MergeSort propio. Las
+E operaciones `find`/`union` cuestan O(E · α(V)) con unión por rango y compresión de
+caminos, prácticamente lineal. Como E ≤ V², también es O(E log V). Espacio O(V + E).
+
+**Estructura usada:** lista de aristas ordenada con MergeSort + **Union-Find** propio
+(`int[] padre`, `int[] rango`) para detectar ciclo con `find(u) == find(v)`.
+
+Prim vs. Kruskal: en grafos ralos rinden parecido y Kruskal es más simple; en grafos densos
+(E ≈ V²) Prim con matriz O(V²) le gana a ordenar V² aristas.
+
+---
+
+### GET /api/seleccion/greedy
+
+Qué paquetes cargar en un vehículo de capacidad dada, tomando por ratio valor/peso
+descendente mientras entren. **Función objetivo:** maximizar la suma de valor sin superar
+la capacidad en kg.
+
+**Parámetros:** `capacidad` (kg, decimal)
+
+**Ejemplo:** `GET /api/seleccion/greedy?capacidad=10`
+
+**Respuesta:**
+```json
+{"elegidos":[
+  {"id":"P1","nombre":"Notebook","peso":6.0,"valor":60.0,"nodoId":"PAL"},
+  {"id":"P4","nombre":"Libros","peso":2.0,"valor":14.0,"nodoId":"AVE"},
+  {"id":"P7","nombre":"Documentacion","peso":1.0,"valor":4.0,"nodoId":"DN"}],
+ "valorTotal":78.0,"pesoTotal":9.0,"tecnica":"greedy"}
 ```
 
-con `501 Not Implemented`.
+**Caso donde greedy NO da el óptimo** (hito 6): con los paquetes del dominio y capacidad
+10, el greedy toma primero P1 (ratio 10, 6 kg) y después ya no le entran P2 ni P3 (5 kg
+cada uno); completa con P4 y P7 y llega a **78 USD**. El óptimo es dejar P1 afuera y cargar
+P2 + P3 = 10 kg exactos por **95 USD**. El greedy es óptimo para la mochila *fraccional*
+(si se pudiera cargar 4/5 de un monitor), no para la 0/1.
+
+**Errores:** 400 si `capacidad` es negativa o falta.
+
+**Complejidad:** O(n log n), dominada por el ordenamiento con el MergeSort propio; el
+recorrido posterior es O(n). Espacio O(n).
+
+**Estructura usada:** lista ordenada por ratio + acumuladores de peso y valor.
+
+---
+
+### GET /api/seleccion/quicksort
+
+Ordena los paquetes con QuickSort propio. Devuelve una lista nueva.
+
+**Parámetros:** `criterio` = `valor` | `peso` | `ratio` (default `ratio`), ascendente
+
+**Ejemplo:** `GET /api/seleccion/quicksort?criterio=ratio`
+
+**Respuesta:**
+```json
+[{"id":"P8",...,"peso":4.0,"valor":12.0},{"id":"P7",...},{"id":"P6",...},{"id":"P5",...},
+ {"id":"P4",...},{"id":"P3",...},{"id":"P2",...},{"id":"P1",...,"peso":6.0,"valor":60.0}]
+```
+
+**Errores:** 400 si `criterio` no es `valor`, `peso` ni `ratio`.
+
+**Complejidad:** O(n log n) promedio, O(n²) peor caso. Partición de Lomuto con **pivote en
+el elemento central** (intercambiado al final del rango antes de particionar): con pivote
+en el último, una entrada ya ordenada, que es lo habitual cuando los datos vienen de una
+base, produce particiones de n−1 y 0 en cada nivel y cae en el peor caso
+`T(n) = T(n−1) + O(n) = O(n²)`. El peor caso sigue existiendo (por ejemplo, todos los
+elementos iguales). Espacio O(log n) de pila en promedio. No es estable.
+
+**Estructura usada:** copia de la lista ordenada in-place, recursión sobre los dos
+subrangos.
+
+---
+
+### GET /api/seleccion/mergesort
+
+Ordena los paquetes con MergeSort propio, estable. Devuelve una lista nueva.
+
+**Parámetros:** `criterio` = `valor` | `peso` | `ratio` (default `ratio`), ascendente
+
+**Ejemplo:** `GET /api/seleccion/mergesort?criterio=peso`
+
+**Respuesta:**
+```json
+[{"id":"P7","peso":1.0,...},{"id":"P4","peso":2.0,...},{"id":"P5","peso":3.0,...},
+ {"id":"P8","peso":4.0,...},{"id":"P2","peso":5.0,...},{"id":"P3","peso":5.0,...},
+ {"id":"P1","peso":6.0,...},{"id":"P6","peso":8.0,...}]
+```
+P2 y P3 pesan lo mismo y conservan su orden original: estabilidad (la mezcla toma la mitad
+izquierda ante empate).
+
+**Errores:** 400 si `criterio` no es `valor`, `peso` ni `ratio`.
+
+**Complejidad:** O(n log n) siempre. Recurrencia `T(n) = 2T(n/2) + O(n)`: a=2, b=2, k=1,
+`a = b^k` → `T(n) = O(n^k log n) = O(n log n)`. La división es siempre por la mitad, sin
+depender de los datos. Espacio O(n) por las listas auxiliares de la mezcla.
+
+**Estructura usada:** recursión sobre `subList` y una lista auxiliar por mezcla.
