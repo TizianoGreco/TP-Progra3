@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Red Logística AMBA</title>
+<meta name="description" content="Red logística de depósitos y centros de distribución del AMBA: algoritmos de grafos, mochila y backtracking animados sobre el mapa. TPO de Programación III, UADE.">
+<meta name="theme-color" content="#090c11">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect x='1' y='1' width='32' height='32' rx='7' fill='%23151c26'/%3E%3Cpath d='M9 24 L15 11 L21 19 L26 9' fill='none' stroke='%23ffb547' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='9' cy='24' r='2.8' fill='%235b9dff'/%3E%3Ccircle cx='26' cy='9' r='2.8' fill='%23ff5f57'/%3E%3C/svg%3E">
 <!--
   Pagina visual del TP. NO implementa ningun algoritmo: todo lo que muestra
   sale de los endpoints /api/... La pagina solo dibuja y anima los resultados.
@@ -210,6 +213,74 @@
   .resumen-lab > div { background: var(--panel2); padding: 10px 12px; }
   .resumen-lab .v { font: 600 17px/1.1 var(--mono); margin-top: 5px; }
 
+  /* foco visible, para teclado */
+  :focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+  .nodo:focus-visible { outline: none; }
+  .nodo:focus-visible .cuerpo { stroke-width: 3; }
+
+  /* carga y error del mapa */
+  .cargando { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; background: var(--bg); transition: opacity .3s; }
+  .cargando.fuera { opacity: 0; pointer-events: none; }
+  .cargando[hidden] { display: none; }
+  .cargando .caja { text-align: center; color: var(--muted); font-size: 14px; max-width: 320px; padding: 0 20px; }
+  .cargando .giro { width: 34px; height: 34px; margin: 0 auto 14px; border-radius: 50%; border: 2px solid var(--line2);
+                    border-top-color: var(--amber); animation: gira .8s linear infinite; }
+  .cargando.error .giro { display: none; }
+  .cargando .btn { margin-top: 16px; flex: none; padding: 10px 18px; }
+  @keyframes gira { to { transform: rotate(360deg); } }
+
+  /* brujula y leyenda */
+  .hud.sup { left: 18px; top: 16px; display: flex; align-items: center; gap: 12px; }
+  .hud.sup .meta b { display: block; font: 700 13px/1 var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--ink); }
+  .hud.sup .meta span { display: block; margin-top: 4px; }
+  .hud.izq { background: rgba(13,17,24,.82); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px;
+             backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+
+  /* como se juega y bitacora */
+  .pasos { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 10px; counter-reset: paso; }
+  .pasos li { display: grid; grid-template-columns: 24px 1fr; gap: 10px; font-size: 13.5px; color: var(--muted); counter-increment: paso; }
+  .pasos li::before { content: counter(paso); width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--line2);
+                      display: grid; place-items: center; font: 600 11px var(--mono); color: var(--amber); }
+  .pasos b { color: var(--ink); font-weight: 600; }
+  .bitacora { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 1px; background: var(--line);
+              border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .bitacora li { background: var(--panel2); display: grid; grid-template-columns: 34px 1fr auto auto; gap: 10px; align-items: center;
+                 padding: 8px 12px; font-size: 13px; }
+  .bitacora .nro { font: 500 11px var(--mono); color: var(--dim); }
+  .bitacora .par { font: 700 13.5px var(--display); letter-spacing: .05em; }
+  .bitacora .kms { font: 500 12px var(--mono); color: var(--muted); }
+  .bitacora .mini { display: flex; gap: 2px; }
+  .bitacora .mini i { width: 7px; height: 7px; border-radius: 50%; background: var(--line2); }
+  .bitacora .mini i.on { background: var(--amber); }
+
+  /* equipo */
+  .equipo-btn { border: 1px solid var(--line2); background: var(--panel); border-radius: 6px; padding: 7px 12px; cursor: pointer;
+                font: 600 13px/1 var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .equipo-btn:hover { color: var(--ink); border-color: var(--muted); }
+  dialog { border: 1px solid var(--line2); border-radius: 12px; background: var(--panel); color: var(--ink); padding: 0;
+           width: min(520px, calc(100% - 32px)); box-shadow: 0 30px 80px rgba(0,0,0,.6); }
+  dialog::backdrop { background: rgba(5,7,10,.72); backdrop-filter: blur(3px); }
+  .dlg-cab { display: flex; justify-content: space-between; align-items: start; padding: 20px 22px 6px; }
+  .dlg-cab .titulo { margin: 6px 0 0; }
+  .cerrar { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 22px; line-height: 1; padding: 4px; }
+  .cerrar:hover { color: var(--ink); }
+  .dlg-cuerpo { padding: 8px 22px 22px; }
+  .integrantes { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 1px; background: var(--line);
+                 border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .integrantes li { background: var(--panel2); padding: 11px 14px; display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; }
+  .integrantes b { font-weight: 600; }
+  .integrantes a { font: 500 12px var(--mono); color: var(--teal); text-decoration: none; }
+  .integrantes a:hover { text-decoration: underline; }
+  .integrantes span { grid-column: 1 / 3; font-size: 13px; color: var(--muted); }
+  .ficha { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; margin-top: 16px; font-size: 13.5px; }
+  .ficha dt { color: var(--muted); } .ficha dd { margin: 0; }
+
+  .campo.solo { grid-column: 1 / 3; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+  }
+
   @media (max-width: 980px) {
     .escena { grid-template-columns: 1fr; height: auto; }
     .mapa-wrap { height: 62vh; min-height: 380px; }
@@ -223,7 +294,9 @@
     .modos button kbd { display: none; }
     .bloque { padding: 16px; }
     .stats { grid-template-columns: repeat(2, 1fr); }
-    .hud.izq { gap: 6px 12px; left: 12px; bottom: 10px; font-size: 11px; }
+    .hud.izq { gap: 6px 12px; left: 10px; right: 10px; bottom: 10px; font-size: 11px; }
+    .hud.sup { display: none; }
+    .equipo-btn { display: none; }
   }
 </style>
 </head>
@@ -243,12 +316,21 @@
     <button data-modo="carga"><kbd>2</kbd>Carga</button>
     <button data-modo="lab"><kbd>3</kbd>Laboratorio</button>
   </nav>
-  <div class="estado-api" id="estado-api"><i></i><span>Conectando…</span></div>
+  <div class="estado-api" id="estado-api" role="status"><i></i><span>Conectando…</span></div>
+  <button class="equipo-btn" id="btn-equipo">Equipo</button>
 </header>
 
 <div class="escena">
   <section class="mapa-wrap">
     <svg id="mapa" viewBox="0 0 680 560" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Mapa de la red logística"></svg>
+    <div class="hud sup">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
+        <circle cx="17" cy="17" r="15.5" fill="rgba(13,17,24,.8)" stroke="#2b3646"/>
+        <path d="M17 6 L21 18 L17 15.5 L13 18 Z" fill="#ffb547"/><path d="M17 28 L13 16 L17 18.5 L21 16 Z" fill="#3a4658"/>
+        <text x="17" y="5.2" text-anchor="middle" font-size="6" font-weight="700" fill="#8b97a8" font-family="JetBrains Mono, monospace" dy="-.2">N</text>
+      </svg>
+      <div class="meta"><b>AMBA · Red vial</b><span id="hud-meta">Distancias en km por tramo</span></div>
+    </div>
     <div class="hud izq">
       <span><i class="sw c"></i>Centro de distribución</span>
       <span><i class="sw d"></i>Depósito</span>
@@ -256,7 +338,11 @@
       <span><i class="sw l" style="border-color:var(--coral)"></i>Óptimo</span>
       <span><i class="sw l" style="border-color:var(--teal)"></i>Algoritmo</span>
     </div>
-    <div class="aviso" id="aviso"></div>
+    <div class="aviso" id="aviso" role="status" aria-live="polite"></div>
+    <div class="cargando" id="cargando">
+      <div class="caja"><div class="giro"></div><div id="cargando-txt">Cargando la red desde Neo4j…</div>
+        <button class="btn pri" id="reintentar" hidden>Reintentar</button></div>
+    </div>
   </section>
 
   <aside class="panel">
@@ -278,6 +364,14 @@
           <div><div class="k">Racha</div><div class="v" id="m-racha">0</div></div>
         </div>
       </div>
+      <div class="bloque" id="m-reglas">
+        <div class="k">Cómo se juega</div>
+        <ol class="pasos">
+          <li><span>Tocá <b>Nueva misión</b>: se sortea un origen <b>A</b> y un destino <b>B</b>.</span></li>
+          <li><span>Elegí cada tramo tocando un nodo del mapa o un botón de salida. Las rutas son de <b>mano única</b>.</span></li>
+          <li><span>Al llegar, tu camión corre contra el de <b>Dijkstra</b>. Ruta óptima: 3 estrellas y suma racha.</span></li>
+        </ol>
+      </div>
       <div class="bloque" id="m-juego">
         <div class="k">Próximo tramo desde <span id="m-desde" style="color:var(--ink)">—</span></div>
         <div class="salidas" id="m-salidas"><div class="vacio">Empezá una misión para ver las salidas.</div></div>
@@ -286,13 +380,17 @@
           <button class="btn pri" id="m-nueva">Nueva misión</button>
         </div>
       </div>
-      <div class="bloque resultado" id="m-resultado">
+      <div class="bloque resultado" id="m-resultado" aria-live="polite">
         <div class="veredicto">
           <div><div class="k" id="r-kicker">Resultado</div><div class="titulo" id="r-titulo"></div></div>
           <div class="estrellas" id="r-estrellas"></div>
         </div>
         <div class="comparacion" id="r-comp"></div>
         <div class="acciones"><button class="btn pri" id="r-siguiente">Siguiente misión</button></div>
+      </div>
+      <div class="bloque" id="m-historial" hidden>
+        <div class="k">Bitácora</div>
+        <ol class="bitacora" id="m-bitacora"></ol>
       </div>
       <div class="pie"><span>Récord <b class="num" id="m-record" style="color:var(--ink)">0</b> pts</span><span id="m-partidas">0 misiones</span></div>
     </div>
@@ -322,7 +420,7 @@
           <button class="btn pri" id="c-comparar">Despachar</button>
         </div>
       </div>
-      <div class="bloque resultado" id="c-resultado">
+      <div class="bloque resultado" id="c-resultado" aria-live="polite">
         <div class="veredicto">
           <div><div class="k">Resultado</div><div class="titulo" id="cr-titulo"></div></div>
           <div class="estrellas" id="cr-estrellas"></div>
@@ -356,6 +454,28 @@
     </div>
   </aside>
 </div>
+
+<dialog id="equipo" aria-labelledby="equipo-titulo">
+  <div class="dlg-cab">
+    <div><div class="k">TPO · Programación III · UADE · 2° cuatrimestre 2026</div>
+      <div class="titulo" id="equipo-titulo">Red logística AMBA</div></div>
+    <button class="cerrar" id="cerrar-equipo" aria-label="Cerrar">×</button>
+  </div>
+  <div class="dlg-cuerpo">
+    <p class="sub">Depósitos y centros de distribución conectados por rutas de mano única, con la distancia en km como costo. Cada algoritmo corre en el backend sobre el grafo en memoria; esta página solo dibuja lo que devuelve la API.</p>
+    <ul class="integrantes">
+      <li><b>Tiziano Greco</b><a href="https://github.com/TizianoGreco" target="_blank" rel="noopener">@TizianoGreco</a><span>Grafos y configuración</span></li>
+      <li><b>Nicolas Cortese</b><a href="https://github.com/nicortese" target="_blank" rel="noopener">@nicortese</a><span>Optimización y búsqueda</span></li>
+      <li><b>Juan Segundo Addamo</b><a href="https://github.com/juanseaddamo" target="_blank" rel="noopener">@juanseaddamo</a><span>Ordenamiento y expansión mínima</span></li>
+    </ul>
+    <dl class="ficha">
+      <dt>Backend</dt><dd>Java 17 · Spring Boot 3.5 · Spring Data Neo4j</dd>
+      <dt>Base</dt><dd>Neo4j 5: nodos <span class="num">Nodo</span>, relaciones <span class="num">CONECTA</span> con costo</dd>
+      <dt>Algoritmos</dt><dd>12, implementación propia sin librerías ni sort de Java</dd>
+      <dt>Atajos</dt><dd><span class="num">1</span> Misión · <span class="num">2</span> Carga · <span class="num">3</span> Laboratorio</dd>
+    </dl>
+  </div>
+</dialog>
 
 <script>
 // Posicion aproximada de cada nodo en el AMBA (norte arriba, rio al noreste).
@@ -547,7 +667,7 @@ function cambiarModo(m) {
 }
 document.querySelectorAll('.modos button').forEach(b => b.addEventListener('click', () => cambiarModo(b.dataset.modo)));
 document.addEventListener('keydown', ev => {
-  if (ev.target.matches('input, select')) return;
+  if (ev.target.matches('input, select') || $('equipo').open) return;
   const m = { 1: 'mision', 2: 'carga', 3: 'lab' }[ev.key];
   if (m) cambiarModo(m);
 });
@@ -585,12 +705,15 @@ async function nuevaMision() {
   limpiar();
   $('m-resultado').classList.remove('on');
   const origenes = [...new Set(red.rutas.map(r => r.origen))];
-  // Se sortea un par con camino de al menos 2 tramos; el optimo lo dice Dijkstra.
+  const azar = lista => lista[Math.floor(Math.random() * lista.length)];
+  // Se sortea un par con camino de al menos 2 tramos. El destino sale de lo que
+  // BFS alcanza desde el origen, y el optimo lo dice Dijkstra.
   for (let intento = 0; intento < 40; intento++) {
-    const o = origenes[Math.floor(Math.random() * origenes.length)];
-    const d = red.nodos[Math.floor(Math.random() * red.nodos.length)].id;
-    if (o === d) continue;
+    const o = azar(origenes);
     try {
+      const alcanzables = (await api(`/api/grafo/bfs?origen=${o}`)).filter(v => v !== o);
+      if (!alcanzables.length) continue;
+      const d = azar(alcanzables);
       const mejor = await api(`/api/grafo/dijkstra?origen=${o}&destino=${d}`);
       if (mejor.vertices.length < 3) continue;
       mision++;
@@ -600,9 +723,10 @@ async function nuevaMision() {
       $('m-sub').textContent = `Salís de ${nodo(o).nombre}. Llegá a ${nodo(d).nombre} con la menor cantidad de km.`;
       $('m-a').textContent = o; $('m-b').textContent = d; $('m-trayecto').hidden = false;
       $('m-juego').hidden = false;
+      $('m-reglas').hidden = true;
       pintarPartida();
       return;
-    } catch (e) { /* inalcanzable: se sortea otro par */ }
+    } catch (e) { /* falla puntual: se sortea otro par */ }
   }
   avisar('No se pudo sortear una misión. ¿Está cargada la red?');
 }
@@ -653,6 +777,7 @@ async function terminarMision() {
   $('m-puntos').textContent = puntos; $('m-racha').textContent = racha; $('m-record').textContent = record;
   $('m-partidas').textContent = mision + (mision === 1 ? ' misión' : ' misiones');
   $('m-juego').hidden = true;
+  anotarEnBitacora(partida, tuyo, mejor, n);
 
   // Los dos camiones salen juntos: el tuyo por tu ruta, el de Dijkstra por el optimo.
   const yo = animacion;
@@ -676,6 +801,15 @@ async function terminarMision() {
       partida.mejor.vertices.join(' → ') + ` · ${partida.mejor.nodosExpandidos} nodos expandidos`);
   $('m-resultado').classList.add('on');
   animarBarras(comp);
+}
+function anotarEnBitacora(p, tuyo, mejor, n) {
+  const li = document.createElement('li');
+  li.innerHTML = `<span class="nro">#${String(mision).padStart(2, '0')}</span><span class="par">${p.origen} → ${p.destino}</span>
+    <span class="kms">${fmt(tuyo)} / ${fmt(mejor)} km</span><span class="mini">${[0, 1, 2].map(i => `<i class="${i < n ? 'on' : ''}"></i>`).join('')}</span>`;
+  const lista = $('m-bitacora');
+  lista.prepend(li);
+  while (lista.children.length > 6) lista.lastElementChild.remove();
+  $('m-historial').hidden = false;
 }
 $('m-nueva').addEventListener('click', nuevaMision);
 $('r-siguiente').addEventListener('click', nuevaMision);
@@ -782,6 +916,7 @@ function pintarAlgos() {
   }
   const a = ALGOS.find(x => x.id === algoActual);
   $('l-c-origen').hidden = !a.origen; $('l-c-destino').hidden = !a.destino; $('l-c-tope').hidden = !a.tope;
+  $('l-c-origen').classList.toggle('solo', !a.destino);
   $('l-ayuda').hidden = !a.origen;
 }
 function marcarSeleccionLab() {
@@ -863,7 +998,13 @@ $('l-ejecutar').addEventListener('click', async () => {
   }
 });
 
+// ---------------------------------------------------------------- equipo
+$('btn-equipo').addEventListener('click', () => $('equipo').showModal());
+$('cerrar-equipo').addEventListener('click', () => $('equipo').close());
+$('equipo').addEventListener('click', ev => { if (ev.target === $('equipo')) $('equipo').close(); });
+
 // ---------------------------------------------------------------- arranque
+$('reintentar').addEventListener('click', () => location.reload());
 (async function () {
   const est = $('estado-api');
   try {
@@ -873,10 +1014,15 @@ $('l-ejecutar').addEventListener('click', async () => {
   } catch (e) {
     est.className = 'estado-api mal';
     est.querySelector('span').textContent = 'API sin conexión';
-    avisar('No se pudo leer la API: ' + e.message + '. ¿Está levantada la app con Neo4j?');
+    $('cargando').classList.add('error');
+    $('cargando-txt').textContent = 'No se pudo leer la red (' + e.message + '). Revisá que la app esté levantada y conectada a Neo4j.';
+    $('reintentar').hidden = false;
     return;
   }
   dibujar();
+  $('cargando').classList.add('fuera');
+  setTimeout(() => { $('cargando').hidden = true; }, 350);  // sale del todo, aunque la transicion no corra
+  $('hud-meta').textContent = `${red.nodos.length} nodos · ${red.rutas.length} rutas · km por tramo`;
   const ids = red.nodos.map(n => n.id);
   for (const [sel, def] of [['l-origen', 'CD'], ['l-destino', 'QUI']]) {
     const s = $(sel);
