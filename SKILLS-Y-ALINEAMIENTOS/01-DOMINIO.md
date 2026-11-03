@@ -39,8 +39,9 @@ Los tests usan exactamente los mismos datos a través de `GrafoDePrueba.redLogis
 
 ## Rutas (15, dirigidas, en km)
 
-El orden de esta lista es el orden de la lista de adyacencia: **define el orden de BFS y
-DFS**.
+El `Grafo` guarda los vecinos de cada nodo **ordenados por km y, ante empate, por id**,
+sin importar el orden en que Neo4j devuelve las rutas: ese orden **define el orden de BFS
+y DFS**. Desde CD: CAB 7, PAL 9, DS 10, DO 18, DN 19.
 
 | Ruta | km | Ruta | km | Ruta | km |
 |---|---|---|---|---|---|
@@ -80,8 +81,8 @@ Peso total: **34 kg**. Valor total: 243 USD.
 
 | Consulta | Resultado esperado |
 |---|---|
-| BFS desde CD (dirigido) | `CD, PAL, DS, CAB, DN, DO, AVE, QUI, MOR, SI` |
-| DFS desde CD (dirigido) | `CD, PAL, DN, SI, CAB, DS, AVE, QUI, MOR, DO` |
+| BFS desde CD (dirigido) | `CD, CAB, PAL, DS, DO, DN, MOR, AVE, QUI, SI` |
+| DFS desde CD (dirigido) | `CD, CAB, DS, AVE, QUI, MOR, PAL, DN, SI, DO` |
 | BFS / DFS desde QUI | `QUI` (no tiene rutas de salida) |
 | Dijkstra CD → DN | 17 km, `CD → PAL → DN` (gana al directo de 19) |
 | Dijkstra CD → QUI | 27 km, `CD → DS → AVE → QUI` (10 + 5 + 12) |

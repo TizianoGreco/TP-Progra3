@@ -208,8 +208,8 @@ en los tests.
 
 | Consulta | Resultado | Cálculo |
 |---|---|---|
-| BFS desde CD | `CD PAL DS CAB DN DO AVE QUI MOR SI` | por niveles, en orden de adyacencia |
-| DFS desde CD | `CD PAL DN SI CAB DS AVE QUI MOR DO` | profundidad primero |
+| BFS desde CD | `CD CAB PAL DS DO DN MOR AVE QUI SI` | por niveles; vecinos de menor a mayor km |
+| DFS desde CD | `CD CAB DS AVE QUI MOR PAL DN SI DO` | profundidad primero; vecinos de menor a mayor km |
 | Dijkstra CD → DN | 17 km, CD→PAL→DN | 9 + 8, mejora al directo (19) |
 | Dijkstra CD → QUI | 27 km, CD→DS→AVE→QUI | 10 + 5 + 12 |
 | Dijkstra CD → MOR | 23 km, CD→DO→MOR | 18 + 5, mejora a CD→CAB→MOR (24) |
@@ -298,7 +298,7 @@ inalcanzable, pesos negativos, origen inexistente, grafo no conexo).
 | Suite | Tests | Cubre |
 |---|---:|---|
 | `GrafoTest` | 4 | estructura del grafo, matriz de adyacencia, grafo no dirigido |
-| `RecorridosTest` | 6 | BFS y DFS: orden, no repetición, nodos sin salida, errores |
+| `RecorridosTest` | 7 | BFS y DFS: orden, no repetición, nodos sin salida, orden independiente de la carga, errores |
 | `CaminosMinimosTest` | 11 | Dijkstra, UCS y Floyd-Warshall: caminos indirectos, reconstrucción, inalcanzables, pesos y ciclos negativos, Floyd vs. Dijkstra |
 | `SeleccionTest` | 9 | Greedy y mochila 0/1: 78 USD contra 95, capacidad cero, ítem que no entra, errores |
 | `OrdenamientoTest` | 7 | QuickSort y MergeSort: orden por peso y ratio, estabilidad, entrada ordenada y duplicados |

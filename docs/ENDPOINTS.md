@@ -42,11 +42,12 @@ Recorrido en profundidad desde un nodo. Devuelve los ids en el orden en que se v
 
 **Respuesta:**
 ```json
-["CD","DN","SI","DS","AVE","QUI","DO","MOR","CAB","PAL"]
+["CD","CAB","DS","AVE","QUI","MOR","PAL","DN","SI","DO"]
 ```
-(El orden depende del orden en que la base devuelve las conexiones de cada nodo; lo que
-es invariante es que cada nodo aparece una sola vez y que se llega al fondo de una rama
-antes de volver: `CD → DN → SI` antes de pasar a `DS`.)
+Los vecinos de cada nodo se visitan de menor a mayor km (el `Grafo` los guarda así, sin
+importar el orden en que Neo4j devuelve las rutas). Se llega al fondo de una rama antes de
+volver: `CD → CAB → DS → AVE → QUI`, vuelve a `CAB → MOR`, después `PAL → DN → SI` y por
+último `DO`.
 
 **Complejidad:** O(V + E). Cada vértice entra a la recursión una sola vez gracias al
 arreglo de visitados, y la lista de adyacencia de cada uno se recorre una sola vez, lo que
@@ -68,10 +69,11 @@ dos rutas de distancia, etc.
 
 **Respuesta:**
 ```json
-["CD","DN","DS","DO","PAL","CAB","SI","AVE","QUI","MOR"]
+["CD","CAB","PAL","DS","DO","DN","MOR","AVE","QUI","SI"]
 ```
-Nivel 0: `CD`. Nivel 1: sus cinco destinos directos. Nivel 2: `SI` (desde DN), `AVE` y
-`QUI` (desde DS), `MOR` (desde DO o CAB).
+Nivel 0: `CD`. Nivel 1: sus cinco destinos directos, de menor a mayor km (CAB 7, PAL 9,
+DS 10, DO 18, DN 19). Nivel 2: `MOR` (desde CAB), `AVE` y `QUI` (desde DS), `SI` (desde
+DN).
 
 **Complejidad:** O(V + E). Cada vértice se encola y desencola exactamente una vez (se
 marca como visitado **al encolar**, no al desencolar, para que no entre repetido) y cada
@@ -252,8 +254,10 @@ cantidad de saltos. Un salto es una ruta. No se repite un nodo. El límite es in
 
 **Respuesta:**
 ```json
-{"rutas":[{"vertices":["CD","DS","AVE","QUI"],"costoTotal":27.0},{"vertices":["CD","DS","QUI"],"costoTotal":29.0},{"vertices":["CD","CAB","DS","AVE","QUI"],"costoTotal":35.0},{"vertices":["CD","CAB","DS","QUI"],"costoTotal":37.0}],"nodosExploradosConPoda":23,"nodosExploradosSinPoda":30,"ramasPodadas":4}
+{"rutas":[{"vertices":["CD","CAB","DS","AVE","QUI"],"costoTotal":35.0},{"vertices":["CD","CAB","DS","QUI"],"costoTotal":37.0},{"vertices":["CD","DS","AVE","QUI"],"costoTotal":27.0},{"vertices":["CD","DS","QUI"],"costoTotal":29.0}],"nodosExploradosConPoda":23,"nodosExploradosSinPoda":30,"ramasPodadas":4}
 ```
+Las rutas salen en el orden en que las encuentra el DFS, que prueba primero los vecinos más
+cercanos (desde CD, CAB a 7 km antes que DS a 10).
 Sin límite hay 8 rutas (27, 29, 35, 37, 43, 45, 58 y 60 km). Con 30 km quedan 2. Con
 2 saltos queda una sola: `CD → DS → QUI`, 29 km. De QUI a CD la lista va vacía.
 

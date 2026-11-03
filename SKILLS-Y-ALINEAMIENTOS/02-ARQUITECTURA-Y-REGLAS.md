@@ -51,7 +51,7 @@ Sí se pueden agregar records o clases **privadas** de apoyo dentro de la misma 
 int n = grafo.cantidadVertices();          // V
 int u = grafo.indiceDe("CD");              // id de negocio -> índice 0..V-1 (400 si no existe)
 String id = grafo.idDe(u);                 // índice -> id de negocio
-for (Grafo.Arista a : grafo.vecinos(u)) {  // lista de adyacencia, en orden de carga
+for (Grafo.Arista a : grafo.vecinos(u)) {  // vecinos ordenados por km y luego por id
     int v = a.destino();
     double km = a.costo();
 }

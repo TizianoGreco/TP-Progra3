@@ -1,10 +1,9 @@
-# Persona 1 (implementado): resumen, recorridos, Dijkstra y UCS.
-# El resto responde 501 hasta que Persona 2 y Persona 3 implementen su parte.
+# Todos los algoritmos estan implementados. Valores esperados: README, seccion 5.
 
 ### Verificar conexion y datos   (esperado: 10 vertices, 15 aristas)
 GET http://localhost:8080/api/grafo/resumen
 
-### Recorridos
+### Recorridos    (esperado: BFS CD CAB PAL DS DO DN MOR AVE QUI SI; DFS CD CAB DS AVE QUI MOR PAL DN SI DO)
 GET http://localhost:8080/api/grafo/dfs?origen=CD
 GET http://localhost:8080/api/grafo/bfs?origen=CD
 
