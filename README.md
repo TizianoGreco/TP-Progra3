@@ -277,6 +277,12 @@ curl "http://localhost:8080/api/grafo/resumen"
 # {"vertices":10,"aristas":15,"dirigido":true,"ids":["CD","DN","DS",...]}
 ```
 
+Con la aplicación levantada, **http://localhost:8080/** abre una página visual: el mapa de la
+red con los recorridos, caminos mínimos, árboles y rutas animados, y dos juegos para comparar
+contra los algoritmos ("Ganale a Dijkstra" y "Cargá el camión", Greedy vs. Programación
+Dinámica). El mapa tiene vista 2D y 3D (Three.js, se carga desde CDN; sin internet queda la
+vista 2D). La página no implementa ningún algoritmo: dibuja lo que devuelve la API.
+
 La carga inicial se omite si la base ya tiene datos. Para recargar el dominio, ejecutar
 `MATCH (n) DETACH DELETE n` en Neo4j y reiniciar la aplicación. Las requests de ejemplo
 de todos los endpoints están en [docs/api.http](docs/api.http).
@@ -305,6 +311,7 @@ inalcanzable, pesos negativos, origen inexistente, grafo no conexo).
 | `ArbolRecubrimientoTest` | 6 | Prim y Kruskal: 9 aristas y 77 km, rutas que cierran ciclo, grafo no conexo, Union-Find |
 | `BacktrackingTest` | 6 | rutas simples: las 8 de CD a QUI, poda por costo (límite inclusivo) y por saltos, sin camino, errores |
 | `RamificacionYPodaTest` | 5 | reparto en 2, 3 y 4 vehículos (cota, 12 kg, 9 kg), errores, entrada sin modificar |
+| `GrafoServiceTest` | 3 | vista de la red para la página visual: 10 nodos, 15 rutas dirigidas con sus km |
 
 ## 9. Documentación complementaria
 

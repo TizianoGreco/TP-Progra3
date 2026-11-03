@@ -7,6 +7,7 @@ import uade.prog3.tpo.model.Conexion;
 import uade.prog3.tpo.model.Nodo;
 import uade.prog3.tpo.repository.NodoRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,6 +24,15 @@ import java.util.List;
 public class GrafoService {
 
     private static final Logger log = LoggerFactory.getLogger(GrafoService.class);
+
+    /** Vista de un nodo para la pagina visual: sin las conexiones anidadas. */
+    public record NodoVista(String id, String nombre, String tipo) { }
+
+    /** Vista de una ruta para la pagina visual, con su sentido y sus km. */
+    public record RutaVista(String origen, String destino, double km) { }
+
+    /** La red completa tal como esta en la base, lista para dibujar. */
+    public record Red(List<NodoVista> nodos, List<RutaVista> rutas) { }
 
     private final NodoRepository nodoRepository;
 
@@ -55,5 +65,21 @@ public class GrafoService {
         log.info("Grafo cargado: {} vertices, {} aristas, dirigido={}",
                 grafo.cantidadVertices(), grafo.cantidadAristas(), dirigido);
         return grafo;
+    }
+
+    /**
+     * Devuelve los nodos y las rutas para que la pagina visual dibuje el mapa.
+     * No corre ningun algoritmo: solo traduce las entidades a una forma plana.
+     */
+    public Red red() {
+        List<NodoVista> nodos = new ArrayList<>();
+        List<RutaVista> rutas = new ArrayList<>();
+        for (Nodo n : nodoRepository.findAll()) {
+            nodos.add(new NodoVista(n.getId(), n.getNombre(), n.getTipo()));
+            for (Conexion c : n.getConexiones()) {
+                rutas.add(new RutaVista(n.getId(), c.getDestino().getId(), c.getCosto()));
+            }
+        }
+        return new Red(nodos, rutas);
     }
 }

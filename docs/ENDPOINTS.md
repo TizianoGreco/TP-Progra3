@@ -32,6 +32,23 @@ Metadatos del grafo cargado. Sirve para verificar la conexión a la base.
 
 ---
 
+### GET /api/grafo/red
+
+Nodos y rutas tal como están en la base, para que la página visual (`http://localhost:8080/`)
+dibuje el mapa. No corre ningún algoritmo.
+
+**Ejemplo:** `GET /api/grafo/red`
+
+**Respuesta (abreviada):**
+```json
+{"nodos":[{"id":"CD","nombre":"Centro de Distribucion Barracas","tipo":"CENTRO"},...],
+ "rutas":[{"origen":"CD","destino":"PAL","km":9.0},...]}
+```
+
+**Complejidad:** O(V + E): recorre cada nodo y cada una de sus rutas una vez.
+
+---
+
 ### GET /api/grafo/dfs
 
 Recorrido en profundidad desde un nodo. Devuelve los ids en el orden en que se visitan.

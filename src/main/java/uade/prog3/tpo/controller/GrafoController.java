@@ -54,6 +54,12 @@ public class GrafoController {
                 "ids", g.ids());
     }
 
+    /** GET /api/grafo/red   (nodos y rutas para la pagina visual) */
+    @GetMapping("/red")
+    public GrafoService.Red red() {
+        return grafoService.red();
+    }
+
     /** GET /api/grafo/dfs?origen=CD */
     @GetMapping("/dfs")
     public List<String> dfs(@RequestParam String origen) {
