@@ -254,8 +254,10 @@ cantidad de saltos. Un salto es una ruta. No se repite un nodo. El límite es in
 
 **Respuesta:**
 ```json
-{"rutas":[{"vertices":["CD","DS","AVE","QUI"],"costoTotal":27.0},{"vertices":["CD","DS","QUI"],"costoTotal":29.0},{"vertices":["CD","CAB","DS","AVE","QUI"],"costoTotal":35.0},{"vertices":["CD","CAB","DS","QUI"],"costoTotal":37.0}],"nodosExploradosConPoda":23,"nodosExploradosSinPoda":30,"ramasPodadas":4}
+{"rutas":[{"vertices":["CD","CAB","DS","AVE","QUI"],"costoTotal":35.0},{"vertices":["CD","CAB","DS","QUI"],"costoTotal":37.0},{"vertices":["CD","DS","AVE","QUI"],"costoTotal":27.0},{"vertices":["CD","DS","QUI"],"costoTotal":29.0}],"nodosExploradosConPoda":23,"nodosExploradosSinPoda":30,"ramasPodadas":4}
 ```
+Las rutas salen en el orden en que las encuentra el DFS, que prueba primero los vecinos más
+cercanos (desde CD, CAB a 7 km antes que DS a 10).
 Sin límite hay 8 rutas (27, 29, 35, 37, 43, 45, 58 y 60 km). Con 30 km quedan 2. Con
 2 saltos queda una sola: `CD → DS → QUI`, 29 km. De QUI a CD la lista va vacía.
 
