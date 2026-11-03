@@ -13,6 +13,8 @@ de grafos, ordenamiento, selección y optimización de la materia.
 ![Neo4j](https://img.shields.io/badge/Neo4j-5-4581C3?logo=neo4j&logoColor=white)
 ![JUnit](https://img.shields.io/badge/JUnit-5-25A162?logo=junit5&logoColor=white)
 
+**[▶ Ver la demo online](https://tp-progra3-red-logistica-chi.vercel.app)**
+
 </div>
 
 ---
@@ -24,6 +26,7 @@ de grafos, ordenamiento, selección y optimización de la materia.
 | **Período** | 2° cuatrimestre 2026 — Comisión Miércoles Mañana |
 | **Docente** | Manuel Adrián Cáceres |
 | **Entrega final** | 28/10/2026 — tag `entrega-final` |
+| **Demo online** | [tp-progra3-red-logistica-chi.vercel.app](https://tp-progra3-red-logistica-chi.vercel.app) |
 | **Repositorio base** | [Scaffold de la materia](https://github.com/Mancaceresuade/tpo-scaffold-2026) |
 
 ## Integrantes
